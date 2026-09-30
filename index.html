@@ -29,18 +29,16 @@
 
   /* ---------- TEXTO METÁLICO DE PELÍCULA ---------- */
   .metal,.plata,.oro{padding-top:.14em;margin-top:-.14em}
-  .metal{color:transparent;-webkit-background-clip:text;background-clip:text;
-    background-image:linear-gradient(110deg,transparent 42%,rgba(255,255,255,.95) 50%,transparent 58%),
-      linear-gradient(180deg,#ffb3a8 0%,#ff3b3b 22%,#b3121b 48%,#5c070c 52%,#e0262f 72%,#ff8f7d 100%);
-    background-size:260% 100%,100% 100%;background-position:160% 0,0 0;animation:brillo 5s ease-in-out infinite 1.2s;
-    filter:drop-shadow(0 2px 0 #2a0204) drop-shadow(0 14px 34px rgba(0,0,0,.9))}
-  .plata{color:transparent;-webkit-background-clip:text;background-clip:text;
-    background-image:linear-gradient(180deg,#fff 0%,#e3e7ef 38%,#8d95a8 50%,#f0f3f8 64%,#a3abbd 100%);
-    filter:drop-shadow(0 2px 0 rgba(0,0,0,.6)) drop-shadow(0 10px 26px rgba(0,0,0,.85))}
-  .oro{color:transparent;-webkit-background-clip:text;background-clip:text;
-    background-image:linear-gradient(180deg,#fff4c9 0%,#f4c95d 35%,#9a6b12 52%,#ffe08a 70%,#c08f2c 100%);
-    filter:drop-shadow(0 2px 0 rgba(0,0,0,.6)) drop-shadow(0 10px 28px rgba(0,0,0,.85))}
-
+  /* dorado brillante (antes rojo) con destello que recorre las letras */
+  .metal,.oro,.plata{color:transparent;-webkit-background-clip:text;background-clip:text;background-size:260% 100%,100% 100%;background-position:160% 0,0 0}
+  .metal,.oro{background-image:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.98) 50%,transparent 60%),
+      linear-gradient(180deg,#fffbe6 0%,#ffe27a 22%,#f4c95d 40%,#a8740f 52%,#ffe9a0 66%,#f7c948 82%,#fff3c2 100%);
+    filter:drop-shadow(0 2px 0 rgba(90,55,0,.8)) drop-shadow(0 0 16px rgba(255,210,90,.65)) drop-shadow(0 10px 26px rgba(10,30,90,.7));
+    animation:brillo 3.2s ease-in-out infinite}
+  .plata{background-image:linear-gradient(110deg,transparent 40%,rgba(255,255,255,1) 50%,transparent 60%),
+      linear-gradient(180deg,#ffffff 0%,#eef2f8 30%,#aab3c6 50%,#ffffff 62%,#c9d1e0 100%);
+    filter:drop-shadow(0 2px 0 rgba(20,30,60,.7)) drop-shadow(0 0 14px rgba(220,235,255,.7)) drop-shadow(0 10px 24px rgba(10,30,90,.7));
+    animation:brillo 3.6s ease-in-out infinite .8s}
   /* ---------- INTRO (apertura de estreno) ---------- */
   #intro{position:fixed;inset:0;z-index:60;background:radial-gradient(90% 70% at 50% 45%,#2f68dc 0%,#12337e 100%);display:grid;place-items:center;text-align:center;cursor:pointer;transition:opacity .9s ease}
   #intro.fuera{opacity:0;pointer-events:none}
@@ -68,7 +66,7 @@
   .titulo{position:absolute;left:0;right:0;bottom:34px;z-index:4;text-align:center;padding:0 16px}
   .titulo .pre{font-size:12px;color:#e6e6ea;margin:0 0 6px;opacity:0;animation:aparece 1.2s 4.4s forwards}
   .titulo h1{margin:0;font-size:clamp(78px,24vw,190px);line-height:.86;opacity:0;transform:scale(1.35);
-    animation:golpe 1.3s cubic-bezier(.2,.9,.2,1) 3.8s forwards,brillo 5s ease-in-out 5.5s infinite}
+    animation:golpe 1.3s cubic-bezier(.2,.9,.2,1) 3.8s forwards,brillo 3.2s ease-in-out 5.2s infinite}
   .titulo h1 span{display:inline-block}
   .titulo .cumple{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:6px;opacity:0;animation:sube 1s 4.8s forwards}
   .titulo .cumple .raya{height:1px;width:clamp(30px,10vw,70px);background:linear-gradient(90deg,transparent,var(--oro))}
@@ -119,7 +117,7 @@
   .dato small{display:block;font:500 10px "Oswald",sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--oro)}
   .dato strong{display:block;font-size:19px;font-weight:700;line-height:1.3}
   .aviso{margin-top:16px;padding:14px 16px;border-radius:12px;background:linear-gradient(135deg,rgba(224,38,47,.28),rgba(224,38,47,.08));border:1px solid rgba(224,38,47,.6);text-align:center}
-  .aviso .osw{display:block;font-size:11px;color:#ff8f86;margin-bottom:4px}
+  .aviso .osw{display:block;font-size:11px;color:var(--oro);margin-bottom:4px}
   .aviso b{font-size:17px}
   .botones{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:20px}
   .btn{display:inline-flex;align-items:center;gap:9px;cursor:pointer;text-decoration:none;border:none;border-radius:999px;padding:13px 22px;
@@ -164,7 +162,7 @@
   @keyframes desaparece{to{opacity:0}}
   @keyframes destello{0%{opacity:0;transform:scaleX(0)}40%{opacity:1;transform:scaleX(1)}100%{opacity:0;transform:scaleX(1.2)}}
   @keyframes franjas{to{transform:scaleY(1)}}
-  @keyframes golpe{from{filter:blur(12px) drop-shadow(0 14px 34px rgba(0,0,0,.9))}to{opacity:1;transform:none;filter:drop-shadow(0 2px 0 #2a0204) drop-shadow(0 14px 34px rgba(0,0,0,.9))}}
+  @keyframes golpe{from{filter:blur(12px) drop-shadow(0 0 16px rgba(255,210,90,.65))}to{opacity:1;transform:none;filter:drop-shadow(0 2px 0 rgba(90,55,0,.8)) drop-shadow(0 0 22px rgba(255,210,90,.75)) drop-shadow(0 10px 26px rgba(10,30,90,.7))}}
   @keyframes sube{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
   @keyframes rueda{0%{transform:translateY(0);opacity:1}100%{transform:translateY(12px);opacity:0}}
   @keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.08)}}
@@ -198,7 +196,7 @@
   <div class="titulo">
     <p class="pre osw">La familia presenta</p>
     <h1 class="anton metal" id="evNombre">VALENTÍN</h1>
-    <div class="cumple"><span class="raya"></span><b class="anton oro" id="evEdad">CUMPLE 4</b><span class="raya"></span></div>
+    <div class="cumple"><span class="raya"></span><b class="anton plata" id="evEdad">CUMPLE 4</b><span class="raya"></span></div>
     <p class="lema">El héroe más pequeño. La fiesta más grande.</p>
     <span class="estreno osw" id="evCuando">Estreno · Sábado 17 de octubre</span>
   </div>
@@ -261,7 +259,6 @@
       <div id="invBox" hidden>
         <p id="invSaludo" style="margin-top:0;font-size:19px">Cargando tu invitación…</p>
         <div id="invForm" hidden>
-          <p>Tienes <b id="invPases" class="oro anton" style="font-size:28px">0</b> pase(s) reservado(s).</p>
           <label>Un mensaje (opcional)</label>
           <textarea id="invComentario" placeholder="¡Ahí estaremos!"></textarea>
           <div class="botones">
@@ -442,9 +439,9 @@ if(INV && SB_OK){
   sb.rpc('cv_invitado_por_token',{ p_token: INV }).then(({data,error})=>{
     if(error || !data || !data.length){ $('invSaludo').textContent="No encontramos tu invitación."; return; }
     const inv=data[0];
-    $('invSaludo').innerHTML='¡Hola, <b class="oro">'+esc(inv.nombre)+'</b>! Has sido reclutado 🦸';
-    const s=$('introSaludo'); if(s) s.textContent=inv.nombre.toUpperCase()+': HAS SIDO RECLUTADO';
-    $('invPases').textContent=inv.pases||0; $('invForm').hidden=false;
+    $('invSaludo').innerHTML='¡Has sido reclutado para la misión! 🦸';
+    const s=$('introSaludo'); if(s) s.textContent='HAS SIDO RECLUTADO';
+    $('invForm').hidden=false;
     fetch(CONFIG.supabaseUrl+'/functions/v1/cv-media',{method:'POST',headers:{'Content-Type':'application/json',apikey:CONFIG.supabaseKey},body:JSON.stringify({token:INV})})
       .then(r=>r.ok?r.json():null).then(d=>{ if(d && d.urls) modoHombreAranna(d.urls); }).catch(()=>{});
     if(inv.asistira===true) $('invMsg').textContent="Ya confirmaste. ¡Gracias!";
@@ -478,6 +475,12 @@ function modoHombreAranna(u){
     b.addEventListener('click',()=>v.play().catch(()=>{}));
     v.addEventListener('play',()=>b.hidden=true); v.addEventListener('pause',()=>b.hidden=false); v.addEventListener('ended',()=>b.hidden=false);
   }
+  // fondos azules: el Hombre Araña contra el Duende Verde y Venom
+  ['trailerSec','felicSec','galSec','regaloSec'].forEach((id,i)=>{
+    const img=u[['duende.jpg','venom.jpg','duende.jpg','venom.jpg'][i]]; const sec=$(id); if(!img||!sec) return;
+    sec.style.backgroundImage='linear-gradient(180deg,rgba(18,51,126,.72) 0%,rgba(29,75,176,.30) 35%,rgba(29,75,176,.30) 65%,rgba(18,51,126,.8) 100%),url("'+img+'")';
+    sec.style.backgroundSize='cover'; sec.style.backgroundPosition='center';
+  });
   // secciones del medio: cuenta regresiva, datos y confirmación con los mismos personajes
   const escenas=document.querySelectorAll('.escena:not(.creditos) > video');
   ['pan.mp4','batcap.mp4','bat.mp4'].forEach((k,i)=>{ const v=escenas[i]; if(v && u[k]){ v.pause(); v.removeAttribute('src'); v.load(); v.removeAttribute('poster'); v.dataset.src=u[k]; } });

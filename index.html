@@ -259,6 +259,10 @@
       <div id="invBox" hidden>
         <p id="invSaludo" style="margin-top:0;font-size:19px">Cargando tu invitación…</p>
         <div id="invForm" hidden>
+          <div id="genCampos" hidden>
+            <label>Tu nombre o familia</label><input id="genNombre" placeholder="Ej: Familia Pérez" maxlength="80">
+            <label>¿Cuántas personas vienen?</label><input id="genPersonas" type="number" min="1" max="20" value="2" inputmode="numeric">
+          </div>
           <label>Un mensaje (opcional)</label>
           <textarea id="invComentario" placeholder="¡Ahí estaremos!"></textarea>
           <div class="botones">
@@ -444,13 +448,26 @@ if(INV && SB_OK){
     $('invForm').hidden=false;
     fetch(CONFIG.supabaseUrl+'/functions/v1/cv-media',{method:'POST',headers:{'Content-Type':'application/json',apikey:CONFIG.supabaseKey},body:JSON.stringify({token:INV})})
       .then(r=>r.ok?r.json():null).then(d=>{ if(d && d.urls) modoHombreAranna(d.urls); }).catch(()=>{});
-    if(inv.asistira===true) $('invMsg').textContent="Ya confirmaste. ¡Gracias!";
-    if(inv.asistira===false) $('invMsg').textContent="Registraste que no podrás asistir.";
-    if(inv.comentario) $('invComentario').value=inv.comentario;
+    sb.rpc('cv_es_general',{ p_token: INV }).then(({data:gen})=>{
+      if(gen){ GENERAL=true; $('genCampos').hidden=false; return; }
+      if(inv.asistira===true) $('invMsg').textContent="Ya confirmaste. ¡Gracias!";
+      if(inv.asistira===false) $('invMsg').textContent="Registraste que no podrás asistir.";
+      if(inv.comentario) $('invComentario').value=inv.comentario;
+    });
   });
+  let GENERAL=false;
   async function confirmar(asiste){
-    $('invMsg').textContent="Guardando…";
-    const { error } = await sb.rpc('cv_confirmar_invitado',{ p_token:INV, p_asiste:asiste, p_comentario:$('invComentario').value });
+    let error;
+    if(GENERAL){
+      const nombre=$('genNombre').value.trim(), personas=parseInt($('genPersonas').value||'1',10);
+      if(!nombre){ $('invMsg').textContent="Escribe tu nombre o el de tu familia."; $('genNombre').focus(); return; }
+      $('invMsg').textContent="Guardando…";
+      ({ error } = await sb.rpc('cv_confirmar_general',{ p_token:INV, p_nombre:nombre, p_personas:asiste?personas:0, p_asiste:asiste, p_comentario:$('invComentario').value }));
+      if(!error){ $('genNombre').value=''; $('invComentario').value=''; }
+    } else {
+      $('invMsg').textContent="Guardando…";
+      ({ error } = await sb.rpc('cv_confirmar_invitado',{ p_token:INV, p_asiste:asiste, p_comentario:$('invComentario').value }));
+    }
     $('invMsg').textContent = error ? ("Error: "+error.message) : (asiste ? "¡Confirmado! Nos vemos en el estreno 🎬" : "Registrado. ¡Te vamos a extrañar!");
   }
   $('btnSi').addEventListener('click',()=>confirmar(true));

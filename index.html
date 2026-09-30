@@ -52,7 +52,7 @@
   .portada{position:relative;height:100svh;min-height:560px;overflow:hidden;background:var(--azul2)}
   .pantalla{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden}
   /* REGLA: los videos de fondo nunca se cortan (contain) y el espacio sobrante se rellena desenfocado */
-  canvas.fondoBlur{position:absolute;inset:-6%;width:112%;height:112%;filter:blur(26px) brightness(.85) saturate(1.3)}
+  canvas.fondoBlur{position:absolute;inset:-3%;width:106%;height:106%;filter:blur(9px) brightness(.95) saturate(1.2)}
   .pantalla video{position:relative;height:100%;width:100%;object-fit:contain;transition:opacity .35s ease}
   .pantalla video.corte{opacity:0}
   .portada .velo{position:absolute;inset:0;pointer-events:none;
@@ -90,12 +90,12 @@
   .rotulo{text-align:center;margin-bottom:26px}
   .rotulo .osw{font-size:11px;color:var(--oro)}
   .rotulo h2{margin:8px 0 0;font-size:clamp(46px,13vw,82px);line-height:.92}
-  .revela{opacity:0;transform:translateY(34px);filter:blur(8px);transition:opacity 1.1s ease,transform 1.1s cubic-bezier(.2,.8,.2,1),filter 1.1s ease}
-  .revela.in{opacity:1;transform:none;filter:none}
+  .revela{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
+  .revela.in{opacity:1;transform:none}
   .revela.d1{transition-delay:.15s} .revela.d2{transition-delay:.3s} .revela.d3{transition-delay:.45s}
 
   .vidrio{background:var(--vidrio);border:1px solid var(--borde);border-radius:18px;padding:22px 20px;
-    -webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);box-shadow:0 20px 60px rgba(8,25,80,.45)}
+    -webkit-backdrop-filter:blur(5px) saturate(1.2);backdrop-filter:blur(5px) saturate(1.2);box-shadow:0 20px 60px rgba(8,25,80,.45)}
   .vidrio.rojo{border-top:2px solid var(--rojo)}
 
   /* cuenta regresiva */
@@ -112,6 +112,15 @@
     background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.18),rgba(255,255,255,.04));border:1px solid rgba(244,201,93,.45)}
   .dato small{display:block;font:500 10px "Oswald",sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--oro)}
   .dato strong{display:block;font-size:19px;font-weight:700;line-height:1.3}
+  .boleto{display:grid;grid-template-columns:108px 1fr;gap:18px;align-items:center}
+  .fechaGrande{text-align:center;border-radius:16px;padding:14px 6px 12px;background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.06));border:1px solid rgba(244,201,93,.6)}
+  .fechaGrande .dia,.fechaGrande .mes{display:block;font-size:11px;letter-spacing:.22em;color:var(--oro)}
+  .fechaGrande .num{display:block;font-size:66px;line-height:1;margin:2px 0}
+  .infoB .fila{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.14)}
+  .infoB .fila:last-child{border-bottom:none}
+  .infoB small{display:block;font:500 10px "Oswald",sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--oro)}
+  .infoB strong{display:block;font-size:17px;font-weight:700;line-height:1.3}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   .aviso{margin-top:16px;padding:14px 16px;border-radius:12px;background:linear-gradient(135deg,rgba(224,38,47,.28),rgba(224,38,47,.08));border:1px solid rgba(224,38,47,.6);text-align:center}
   .aviso .osw{display:block;font-size:11px;color:var(--oro);margin-bottom:4px}
   .aviso b{font-size:17px}
@@ -196,47 +205,24 @@
     <p class="lema">El héroe más pequeño. La fiesta más grande.</p>
     <span class="estreno osw" id="evCuando">Estreno · Sábado 17 de octubre</span>
   </div>
-  <a class="bajar" href="#mision" aria-label="Bajar"></a>
+  <a class="bajar" href="#datosSec" aria-label="Bajar"></a>
 </header>
 
-<!-- TRÁILER OFICIAL (solo invitados con enlace personal) -->
-<section class="oscura" id="trailerSec" hidden>
-  <div class="contenido">
-    <div class="rotulo revela"><div class="osw">Solo para invitados</div><h2 class="anton metal">Tráiler oficial</h2></div>
-    <div class="cine revela d1">
-      <video id="trVideo" playsinline controls preload="metadata"></video>
-      <button class="play" id="trPlay" aria-label="Ver tráiler">▶</button>
-    </div>
-    <p class="centro revela d2" style="color:var(--tenue);margin-top:16px">Sube el volumen 🔊</p>
-  </div>
-</section>
-
-<!-- ESCENA 1: CUENTA REGRESIVA -->
-<section class="escena" id="mision">
-  <video muted playsinline loop preload="none" poster="video/v1.jpg" data-src="video/v1.mp4"></video>
-  <div class="contenido">
-    <div class="rotulo revela"><div class="osw">Faltan</div><h2 class="anton plata">Para el estreno</h2></div>
-    <div class="cd revela d1" id="cd">
-      <div class="b"><div class="n anton oro" id="cd-d">--</div><div class="l osw">Días</div></div>
-      <div class="b"><div class="n anton oro" id="cd-h">--</div><div class="l osw">Horas</div></div>
-      <div class="b"><div class="n anton oro" id="cd-m">--</div><div class="l osw">Min</div></div>
-      <div class="b"><div class="n anton oro" id="cd-s">--</div><div class="l osw">Seg</div></div>
-    </div>
-    <p class="cd-msg revela d2" id="cd-msg">Los héroes ya se están preparando…</p>
-  </div>
-</section>
-
-<!-- ESCENA 2: DATOS -->
-<section class="escena">
+<!-- 1) LA MISIÓN: DATOS DE LA FIESTA -->
+<section class="escena" id="datosSec">
   <video muted playsinline loop preload="none" poster="video/v2.jpg" data-src="video/v2.mp4"></video>
   <div class="contenido">
     <div class="rotulo revela"><div class="osw">Clasificado</div><h2 class="anton metal">La misión</h2></div>
-    <div class="vidrio rojo revela d1">
-      <div class="dato"><div class="ico">📅</div><div><small>Fecha</small><strong id="evFecha"></strong></div></div>
-      <div class="dato"><div class="ico">⏰</div><div><small>Horario</small><strong id="evHora"></strong></div></div>
-      <div class="dato"><div class="ico">🏠</div><div><small>Lugar</small><strong id="evLugar"></strong></div></div>
-      <div class="dato"><div class="ico">📍</div><div><small>Dirección</small><strong id="evDireccion"></strong></div></div>
-      <div class="dato" id="vestWrap" hidden><div class="ico">🦸</div><div><small>Vestimenta</small><strong id="evVestimenta"></strong></div></div>
+    <div class="vidrio revela d1">
+      <div class="boleto">
+        <div class="fechaGrande"><span class="dia osw">Sábado</span><span class="num anton oro">17</span><span class="mes osw">Octubre</span><span class="sr" id="evFecha"></span></div>
+        <div class="infoB">
+          <div class="fila"><small>Horario</small><strong id="evHora"></strong></div>
+          <div class="fila"><small>Lugar</small><strong id="evLugar"></strong></div>
+          <div class="fila"><small>Dirección</small><strong id="evDireccion"></strong></div>
+          <div class="fila" id="vestWrap" hidden><small>Vestimenta</small><strong id="evVestimenta"></strong></div>
+        </div>
+      </div>
       <div class="aviso"><span class="osw">Importante</span><b id="evNota"></b></div>
       <div class="botones">
         <a class="btn" id="evMapa" target="_blank" rel="noopener">📍 Cómo llegar</a>
@@ -246,7 +232,7 @@
   </div>
 </section>
 
-<!-- ESCENA 3: CONFIRMACIÓN -->
+<!-- 2) CONFIRMACIÓN -->
 <section class="escena" id="rsvpSec">
   <video muted playsinline loop preload="none" poster="video/v3.jpg" data-src="video/v3.mp4"></video>
   <div class="contenido">
@@ -273,6 +259,33 @@
         <div class="botones"><a class="btn wa" id="evWa" target="_blank" rel="noopener">Confirmar por WhatsApp</a></div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- 3) CUENTA REGRESIVA -->
+<section class="escena" id="mision">
+  <video muted playsinline loop preload="none" poster="video/v1.jpg" data-src="video/v1.mp4"></video>
+  <div class="contenido">
+    <div class="rotulo revela"><div class="osw">Faltan</div><h2 class="anton plata">Para el estreno</h2></div>
+    <div class="cd revela d1" id="cd">
+      <div class="b"><div class="n anton oro" id="cd-d">--</div><div class="l osw">Días</div></div>
+      <div class="b"><div class="n anton oro" id="cd-h">--</div><div class="l osw">Horas</div></div>
+      <div class="b"><div class="n anton oro" id="cd-m">--</div><div class="l osw">Min</div></div>
+      <div class="b"><div class="n anton oro" id="cd-s">--</div><div class="l osw">Seg</div></div>
+    </div>
+    <p class="cd-msg revela d2" id="cd-msg">Los héroes ya se están preparando…</p>
+  </div>
+</section>
+
+<!-- 4) TRÁILER OFICIAL (solo invitados con enlace) -->
+<section class="oscura" id="trailerSec" hidden>
+  <div class="contenido">
+    <div class="rotulo revela"><div class="osw">Solo para invitados</div><h2 class="anton metal">Tráiler oficial</h2></div>
+    <div class="cine revela d1">
+      <video id="trVideo" playsinline controls preload="metadata"></video>
+      <button class="play" id="trPlay" aria-label="Ver tráiler">▶</button>
+    </div>
+    <p class="centro revela d2" style="color:var(--tenue);margin-top:16px">Sube el volumen 🔊</p>
   </div>
 </section>
 
@@ -505,8 +518,8 @@ function modoHombreAranna(u){
     sec.style.backgroundSize='cover'; sec.style.backgroundPosition='center';
   });
   // secciones del medio: cuenta regresiva, datos y confirmación con los mismos personajes
-  const escenas=document.querySelectorAll('.escena:not(.creditos) > video');
-  ['pan.mp4','batcap.mp4','bat.mp4'].forEach((k,i)=>{ const v=escenas[i]; if(v && u[k]){ v.pause(); v.removeAttribute('src'); v.load(); v.removeAttribute('poster'); v.dataset.src=u[k]; } });
+  [['datosSec','batcap.mp4'],['rsvpSec',u['flash.mp4']?'flash.mp4':'bat.mp4'],['mision','pan.mp4']].forEach(([id,k])=>{
+    const v=document.querySelector('#'+id+' > video'); if(v && u[k]){ v.pause(); v.removeAttribute('src'); v.load(); v.removeAttribute('poster'); v.dataset.src=u[k]; } });
   const vc=document.querySelector('.creditos > video');
   if(vc && u['fondo.mp4']){
     vc.pause(); vc.removeAttribute('src'); vc.load();

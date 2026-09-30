@@ -478,6 +478,9 @@ function modoHombreAranna(u){
     b.addEventListener('click',()=>v.play().catch(()=>{}));
     v.addEventListener('play',()=>b.hidden=true); v.addEventListener('pause',()=>b.hidden=false); v.addEventListener('ended',()=>b.hidden=false);
   }
+  // secciones del medio: cuenta regresiva, datos y confirmación con los mismos personajes
+  const escenas=document.querySelectorAll('.escena:not(.creditos) > video');
+  ['pan.mp4','batcap.mp4','bat.mp4'].forEach((k,i)=>{ const v=escenas[i]; if(v && u[k]){ v.pause(); v.removeAttribute('src'); v.load(); v.removeAttribute('poster'); v.dataset.src=u[k]; } });
   const vc=document.querySelector('.creditos > video');
   if(vc && u['fondo.mp4']){
     vc.pause(); vc.removeAttribute('src'); vc.load();

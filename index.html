@@ -78,7 +78,18 @@
   .titulo .estreno{display:inline-block;margin-top:14px;padding:7px 16px;border:1px solid rgba(244,201,93,.55);font-size:12px;color:var(--oro);opacity:0;animation:sube 1s 5.7s forwards;background:rgba(0,0,0,.35)}
   .bajar{position:absolute;left:50%;bottom:calc(6.5vh + -2px);transform:translate(-50%,100%);z-index:4;width:22px;height:36px;border:2px solid rgba(255,255,255,.6);border-radius:14px;opacity:0;animation:aparece 1s 6.4s forwards}
   .bajar::after{content:"";position:absolute;left:50%;top:6px;width:4px;height:7px;margin-left:-2px;border-radius:2px;background:#fff;animation:rueda 1.6s infinite}
-  .sonido{display:none}
+  /* modo invitado: Hombre Araña (archivos privados, solo con enlace personal) */
+  .spidey{position:absolute;inset:0;overflow:hidden;background:#000}
+  .spidey .sfondo{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;filter:blur(28px) brightness(.5) saturate(1.2);display:none}
+  .spidey .sp{position:absolute;inset:0;margin:auto;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease}
+  .spidey .sp.on{opacity:1;animation:kenburns 7s ease-out forwards}
+  @media (min-aspect-ratio:3/4){ .spidey .sfondo{display:block} .spidey .sp{width:auto;aspect-ratio:9/16} }
+  .cine{position:relative;max-width:360px;margin:0 auto;aspect-ratio:9/16;border-radius:18px;overflow:hidden;background:#000;
+    box-shadow:0 0 0 1px rgba(255,255,255,.15),0 30px 90px rgba(224,38,47,.35)}
+  .cine video{width:100%;height:100%;object-fit:cover;display:block}
+  .play{position:absolute;inset:0;margin:auto;width:86px;height:86px;border-radius:50%;border:none;cursor:pointer;font-size:34px;color:#fff;padding-left:6px;
+    background:linear-gradient(180deg,#ff4a4a,#b3121b);box-shadow:0 0 0 12px rgba(224,38,47,.25),0 10px 40px rgba(0,0,0,.6);animation:latido 1.8s ease-in-out infinite}
+  @keyframes latido{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 
   /* ---------- ESCENAS CON VIDEO DE FONDO ---------- */
   .escena{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden;background:#000}
@@ -186,6 +197,10 @@
   <div class="pantalla">
     <canvas class="fondoBlur" id="blur" width="72" height="128" aria-hidden="true"></canvas>
     <video id="trailer" muted playsinline autoplay preload="auto" poster="video/v0.jpg" src="video/v0.mp4"></video>
+    <div class="spidey" id="spidey" hidden>
+      <img class="sfondo" id="spFondo" alt="">
+      <img class="sp" alt=""><img class="sp" alt=""><img class="sp" alt="">
+    </div>
   </div>
   <div class="velo"></div>
   <div class="franja arriba"></div><div class="franja abajo"></div>
@@ -198,6 +213,18 @@
   </div>
   <a class="bajar" href="#mision" aria-label="Bajar"></a>
 </header>
+
+<!-- TRÁILER OFICIAL (solo invitados con enlace personal) -->
+<section class="oscura" id="trailerSec" hidden>
+  <div class="contenido">
+    <div class="rotulo revela"><div class="osw">Solo para invitados</div><h2 class="anton metal">Tráiler oficial</h2></div>
+    <div class="cine revela d1">
+      <video id="trVideo" playsinline controls preload="metadata"></video>
+      <button class="play" id="trPlay" aria-label="Ver tráiler">▶</button>
+    </div>
+    <p class="centro revela d2" style="color:var(--tenue);margin-top:16px">Sube el volumen 🔊</p>
+  </div>
+</section>
 
 <!-- ESCENA 1: CUENTA REGRESIVA -->
 <section class="escena" id="mision">
@@ -394,7 +421,7 @@ $('evCal').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
   if(!('IntersectionObserver' in window) || REDUCE){ revelas.forEach(e=>e.classList.add('in')); if(REDUCE) return; }
   const io=new IntersectionObserver(es=>es.forEach(e=>{
     const s=e.target, v=s.querySelector(':scope > video');
-    if(e.isIntersecting){ s.classList.add('viva'); if(v){ if(!v.src) v.src=v.dataset.src; v.play().catch(()=>{}); } }
+    if(e.isIntersecting){ s.classList.add('viva'); if(v && v.dataset.src){ if(!v.src) v.src=v.dataset.src; v.play().catch(()=>{}); } }
     else if(v && !v.paused) v.pause();
   }),{threshold:.2, rootMargin:'120px 0px'});
   escenas.forEach(s=>io.observe(s));
@@ -426,6 +453,8 @@ if(INV && SB_OK){
     $('invSaludo').innerHTML='¡Hola, <b class="oro">'+esc(inv.nombre)+'</b>! Has sido reclutado 🦸';
     const s=$('introSaludo'); if(s) s.textContent=inv.nombre.toUpperCase()+': HAS SIDO RECLUTADO';
     $('invPases').textContent=inv.pases||0; $('invForm').hidden=false;
+    fetch(CONFIG.supabaseUrl+'/functions/v1/cv-media',{method:'POST',headers:{'Content-Type':'application/json',apikey:CONFIG.supabaseKey},body:JSON.stringify({token:INV})})
+      .then(r=>r.ok?r.json():null).then(d=>{ if(d && d.urls) modoHombreAranna(d.urls); }).catch(()=>{});
     if(inv.asistira===true) $('invMsg').textContent="Ya confirmaste. ¡Gracias!";
     if(inv.asistira===false) $('invMsg').textContent="Registraste que no podrás asistir.";
     if(inv.comentario) $('invComentario').value=inv.comentario;
@@ -441,6 +470,26 @@ if(INV && SB_OK){
   $('evWa').href='https://wa.me/'+CONFIG.whatsapp+'?text='+encodeURIComponent('¡Hola! Confirmo asistencia al cumpleaños de '+CONFIG.nombre+' 🦸 Somos ___ personas.');
 } else {
   $('rsvpSec').hidden=true;
+}
+
+/* ---- modo invitado: el Hombre Araña toma la portada + tráiler oficial con narrador ---- */
+function modoHombreAranna(u){
+  const fotos=[u['sp90.jpg'],u['sp95.jpg'],u['sp96.jpg']].filter(Boolean); if(!fotos.length) return;
+  const caja=$('spidey'), imgs=caja.querySelectorAll('.sp');
+  imgs.forEach((im,i)=>{ if(fotos[i]) im.src=fotos[i]; });
+  const tv=$('trailer'); tv.pause(); tv.removeAttribute('src'); tv.load(); tv.style.visibility='hidden';
+  caja.hidden=false;
+  let i=0; const siguiente=()=>{ imgs.forEach((im,k)=>im.classList.toggle('on',k===i)); $('spFondo').src=fotos[i]; i=(i+1)%fotos.length; };
+  siguiente(); if(!REDUCE) setInterval(siguiente,5000);
+  if(u['trailer.mp4']){
+    const v=$('trVideo'), b=$('trPlay');
+    v.src=u['trailer.mp4']; if(u['sp96.jpg']) v.poster=u['sp96.jpg'];
+    $('trailerSec').hidden=false;
+    b.addEventListener('click',()=>v.play().catch(()=>{}));
+    v.addEventListener('play',()=>b.hidden=true); v.addEventListener('pause',()=>b.hidden=false); v.addEventListener('ended',()=>b.hidden=false);
+  }
+  const vc=document.querySelector('.creditos > video');
+  if(vc && u['sp96.jpg']){ vc.pause(); vc.removeAttribute('src'); vc.dataset.src=''; vc.load(); vc.poster=u['sp96.jpg']; }
 }
 
 /* ---- felicitaciones y galería ---- */

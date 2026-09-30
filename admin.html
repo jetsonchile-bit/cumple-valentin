@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel · Cumple de Valentín</title>
+<style>
+  :root{ --bg:#14162a; --card:#1e2140; --line:#33385f; --gold:#d6af55; --text:#e9e6da; --muted:#9a97b0; --ok:#4caf82; --no:#c9556b; }
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;padding:22px}
+  .wrap{max-width:920px;margin:0 auto}
+  h1{font-weight:600;color:var(--gold);margin:0 0 4px} .sub{color:var(--muted);margin:0 0 22px;font-size:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+  label{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:0 0 5px}
+  input,button{font:inherit} input{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:#12142a;color:var(--text)}
+  button{cursor:pointer;border:none;border-radius:9px;padding:10px 16px;background:var(--gold);color:#241c05;font-weight:600}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+  .row > div{flex:1;min-width:140px}
+  table{width:100%;border-collapse:collapse;font-size:14px} th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+  .stat b{display:block;font-size:1.7rem;color:var(--gold)} .stat span{font-size:12px;color:var(--muted)}
+  .pill{padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600}
+  .p-si{background:rgba(76,175,130,.18);color:var(--ok)} .p-no{background:rgba(201,85,107,.18);color:var(--no)} .p-pend{background:#2a2f52;color:var(--muted)}
+  .pases{width:64px}  .msg{color:var(--muted);font-size:13px;margin-top:8px;min-height:18px}
+  a.link{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Panel · Cumple de Valentín 🦸</h1>
+  <p class="sub">Crea invitados con su enlace personal, asigna pases y revisa confirmaciones.</p>
+
+  <!-- LOGIN -->
+  <div class="card" id="loginCard">
+    <label>Contraseña del panel</label>
+    <div class="row">
+      <div><input type="password" id="pass" placeholder="••••••••" autocomplete="current-password"></div>
+      <button id="btnLogin">Entrar</button>
+    </div>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <!-- PANEL -->
+  <div id="panel" hidden>
+    <div class="stats" id="stats"></div>
+
+    <div class="card">
+      <label>Nuevo invitado</label>
+      <div class="row">
+        <div><input id="nvNombre" placeholder="Nombre del invitado / familia"></div>
+        <div style="max-width:120px"><input id="nvPases" type="number" min="0" max="20" value="2" placeholder="Pases"></div>
+        <button id="btnCrear">Crear + copiar enlace</button>
+      </div>
+      <div class="msg" id="crearMsg"></div>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead><tr><th>Nombre</th><th>Estado</th><th>Pases</th><th>Enlace</th><th>Comentario</th><th></th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="msg" id="listMsg"></div>
+    </div>
+
+    <div class="card">
+      <label>Cambiar contraseña del panel</label>
+      <div class="row">
+        <div><input type="password" id="nuevaPass" placeholder="Nueva contraseña (mínimo 6)" autocomplete="new-password"></div>
+        <button id="btnPass">Cambiar</button>
+      </div>
+      <div class="msg" id="passMsg"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const CONFIG = {
+  supabaseUrl: "https://fqajmcvrijjthbgqhpgl.supabase.co",
+  supabaseKey: "sb_publishable_VgfrzNKCje9xD4pkYXjmDA_jeabiZA1",
+  siteUrl:     "https://jetsonchile-bit.github.io/cumple-valentin"
+};
+const sb = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+const $ = id => document.getElementById(id);
+let PASS = "";
+
+async function entrar(){
+  PASS = $('pass').value;
+  $('loginMsg').textContent = "Entrando…";
+  const { data, error } = await sb.rpc('cv_admin_rsvp', { pass: PASS });
+  if(error){ $('loginMsg').textContent = "Contraseña incorrecta."; return; }
+  $('loginCard').hidden = true; $('panel').hidden = false;
+  pintar(data);
+}
+$('btnLogin').addEventListener('click', entrar);
+$('pass').addEventListener('keydown', e => { if(e.key==='Enter') entrar(); });
+
+async function recargar(){
+  const { data, error } = await sb.rpc('cv_admin_rsvp', { pass: PASS });
+  if(!error) pintar(data);
+}
+
+function estadoPill(a){
+  if(a === true)  return '<span class="pill p-si">Asiste</span>';
+  if(a === false) return '<span class="pill p-no">No asiste</span>';
+  return '<span class="pill p-pend">Pendiente</span>';
+}
+
+function pintar(rows){
+  rows = rows || [];
+  const conf = rows.filter(r => r.asistira === true);
+  const noas = rows.filter(r => r.asistira === false);
+  const pend = rows.filter(r => r.asistira === null);
+  const personas = conf.reduce((s,r)=> s + (1 + (r.acompanantes||0)), 0);
+  $('stats').innerHTML = [
+    ['Invitados', rows.length],['Confirmados', conf.length],['Pendientes', pend.length],
+    ['No asisten', noas.length],['Total personas', personas]
+  ].map(([k,v])=>`<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
+
+  $('tbody').innerHTML = rows.map(r => {
+    const link = CONFIG.siteUrl + '/?inv=' + (r.token||'');
+    return `<tr data-id="${r.id}">
+      <td>${escapeHtml(r.nombre||'')}</td>
+      <td>${estadoPill(r.asistira)}</td>
+      <td><input class="pases" type="number" min="0" max="20" value="${r.acompanantes||0}" data-id="${r.id}"></td>
+      <td><button class="ghost btn-link" data-link="${encodeURIComponent(link)}">Copiar</button></td>
+      <td>${escapeHtml(r.comentario||'')}</td>
+      <td><button class="ghost btn-del" data-id="${r.id}">Borrar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// crear invitado
+$('btnCrear').addEventListener('click', async () => {
+  const nombre = $('nvNombre').value.trim(); const pases = parseInt($('nvPases').value||'0',10);
+  if(!nombre){ $('crearMsg').textContent = "Escribe un nombre."; return; }
+  $('crearMsg').textContent = "Creando…";
+  const { data, error } = await sb.rpc('cv_admin_crear_invitado', { pass: PASS, p_nombre: nombre, p_pases: pases });
+  if(error){ $('crearMsg').textContent = "Error: " + error.message; return; }
+  const link = CONFIG.siteUrl + '/?inv=' + data;
+  try{ await navigator.clipboard.writeText(link); }catch(e){}
+  $('crearMsg').innerHTML = 'Creado. Enlace copiado: <a class="link" href="'+link+'" target="_blank">'+link+'</a>';
+  $('nvNombre').value = ''; recargar();
+});
+
+// delegación: cambiar pases, copiar enlace, borrar
+$('tbody').addEventListener('change', async e => {
+  if(!e.target.classList.contains('pases')) return;
+  const rid = e.target.dataset.id, pases = parseInt(e.target.value||'0',10);
+  await sb.rpc('cv_admin_set_pases', { pass: PASS, rid, pases }); recargar();
+});
+$('tbody').addEventListener('click', async e => {
+  if(e.target.classList.contains('btn-link')){
+    const link = decodeURIComponent(e.target.dataset.link);
+    try{ await navigator.clipboard.writeText(link); e.target.textContent = "¡Copiado!"; setTimeout(()=>e.target.textContent="Copiar",1200);}catch(err){}
+  }
+  if(e.target.classList.contains('btn-del')){
+    if(!confirm("¿Borrar este invitado?")) return;
+    await sb.rpc('cv_admin_del_rsvp', { pass: PASS, rid: e.target.dataset.id }); recargar();
+  }
+});
+
+// cambiar contraseña
+$('btnPass').addEventListener('click', async () => {
+  const nueva = $('nuevaPass').value;
+  if(nueva.length < 6){ $('passMsg').textContent = "Mínimo 6 caracteres."; return; }
+  const { data, error } = await sb.rpc('cv_admin_change_password', { current_pass: PASS, new_pass: nueva });
+  if(error || !data){ $('passMsg').textContent = "No se pudo cambiar."; return; }
+  PASS = nueva; $('nuevaPass').value = ''; $('passMsg').textContent = "¡Contraseña cambiada!";
+});
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+</script>
+</body>
+</html>

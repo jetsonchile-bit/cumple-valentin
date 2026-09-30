@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Valentín · Cumple 4 — La película</title>
 <meta name="description" content="¡Estás invitado al estreno! Valentín cumple 4 años. Sábado 17 de octubre.">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#12337e">
 <meta property="og:title" content="Valentín cumple 4 · ¡Estás invitado al estreno!">
 <meta property="og:description" content="Sábado 17 de octubre · 13:00 a 17:30 hrs · Quincho del condominio">
 <meta property="og:image" content="https://jetsonchile-bit.github.io/cumple-valentin/video/v0.jpg">
@@ -16,12 +16,12 @@
 <style>
   :root{
     --negro:#000; --noche:#05060c; --rojo:#e0262f; --rojo2:#8e0f16; --oro:#f4c95d; --oro2:#b8872a;
-    --azul:#3b7bff; --texto:#f2f2f5; --tenue:#a9adbd; --vidrio:rgba(8,10,20,.58); --borde:rgba(255,255,255,.14);
+    --azul:#3b7bff; --texto:#f2f2f5; --tenue:#a9adbd; --vidrio:rgba(255,255,255,.16); --borde:rgba(255,255,255,.32); --azul1:#2156c9; --azul2:#12337e;
   }
   *{box-sizing:border-box} html{scroll-behavior:smooth} [hidden]{display:none!important}
-  body{margin:0;background:var(--negro);color:var(--texto);font:400 17px/1.55 "Inter",system-ui,sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  body{margin:0;background:linear-gradient(180deg,#2a63d4 0%,#163d94 50%,#12337e 100%) fixed;color:var(--texto);font:400 17px/1.55 "Inter",system-ui,sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
   /* grano de película */
-  body::after{content:"";position:fixed;inset:-50%;z-index:50;pointer-events:none;opacity:.09;
+  body::after{content:"";position:fixed;inset:-50%;z-index:50;pointer-events:none;opacity:.05;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     animation:grano .9s steps(6) infinite}
   .anton{font-family:"Anton",Impact,sans-serif;font-weight:400;letter-spacing:.02em}
@@ -42,7 +42,7 @@
     filter:drop-shadow(0 2px 0 rgba(0,0,0,.6)) drop-shadow(0 10px 28px rgba(0,0,0,.85))}
 
   /* ---------- INTRO (apertura de estreno) ---------- */
-  #intro{position:fixed;inset:0;z-index:60;background:#000;display:grid;place-items:center;text-align:center;cursor:pointer;transition:opacity .9s ease}
+  #intro{position:fixed;inset:0;z-index:60;background:radial-gradient(90% 70% at 50% 45%,#2f68dc 0%,#12337e 100%);display:grid;place-items:center;text-align:center;cursor:pointer;transition:opacity .9s ease}
   #intro.fuera{opacity:0;pointer-events:none}
   #intro .l1,#intro .l2,#intro .l3{opacity:0;margin:0}
   #intro .l1{font-size:13px;color:var(--tenue);animation:aparece 1.1s .3s forwards,desaparece .6s 2.1s forwards}
@@ -51,9 +51,9 @@
   #intro .destello{position:absolute;left:0;right:0;top:50%;height:2px;background:linear-gradient(90deg,transparent,#fff,transparent);opacity:0;animation:destello 1.4s 2.2s ease-out forwards}
 
   /* ---------- PORTADA / TRÁILER ---------- */
-  .portada{position:relative;height:100svh;min-height:560px;overflow:hidden;background:#000}
+  .portada{position:relative;height:100svh;min-height:560px;overflow:hidden;background:var(--azul2)}
   .pantalla{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden}
-  .pantalla canvas.fondoBlur{position:absolute;inset:-6%;width:112%;height:112%;filter:blur(28px) brightness(.55) saturate(1.2);display:none}
+  .pantalla canvas.fondoBlur{position:absolute;inset:-6%;width:112%;height:112%;filter:blur(28px) brightness(.85) saturate(1.3);display:none}
   .pantalla video{position:relative;height:100%;width:100%;object-fit:cover;transition:opacity .35s ease;transform-origin:50% 60%;animation:kenburns 16s ease-in-out infinite alternate}
   .pantalla video.corte{opacity:0}
   @media (min-aspect-ratio:3/4){
@@ -61,11 +61,11 @@
     .pantalla video{width:auto;aspect-ratio:9/16;box-shadow:0 0 120px 40px rgba(0,0,0,.9)}
   }
   .portada .velo{position:absolute;inset:0;pointer-events:none;
-    background:radial-gradient(120% 80% at 50% 45%,transparent 45%,rgba(0,0,0,.75) 100%),
-               linear-gradient(180deg,rgba(0,0,0,.55) 0%,transparent 22%,transparent 48%,rgba(0,0,0,.85) 82%,#000 100%)}
-  .franja{position:absolute;left:0;right:0;height:6.5vh;background:#000;z-index:3;transform:scaleY(0);animation:franjas 1.4s cubic-bezier(.7,0,.2,1) .2s forwards}
+    background:radial-gradient(120% 80% at 50% 45%,transparent 55%,rgba(10,30,90,.45) 100%),
+               linear-gradient(180deg,rgba(18,51,126,.35) 0%,transparent 20%,transparent 52%,rgba(18,51,126,.72) 82%,var(--azul2) 100%)}
+  .franja{display:none;position:absolute;left:0;right:0;height:6.5vh;background:#000;z-index:3;transform:scaleY(0);animation:franjas 1.4s cubic-bezier(.7,0,.2,1) .2s forwards}
   .franja.arriba{top:0;transform-origin:top} .franja.abajo{bottom:0;transform-origin:bottom}
-  .titulo{position:absolute;left:0;right:0;bottom:calc(6.5vh + 18px);z-index:4;text-align:center;padding:0 16px}
+  .titulo{position:absolute;left:0;right:0;bottom:34px;z-index:4;text-align:center;padding:0 16px}
   .titulo .pre{font-size:12px;color:#e6e6ea;margin:0 0 6px;opacity:0;animation:aparece 1.2s 4.4s forwards}
   .titulo h1{margin:0;font-size:clamp(78px,24vw,190px);line-height:.86;opacity:0;transform:scale(1.35);
     animation:golpe 1.3s cubic-bezier(.2,.9,.2,1) 3.8s forwards,brillo 5s ease-in-out 5.5s infinite}
@@ -76,15 +76,10 @@
   .titulo .cumple b{font-size:clamp(26px,7.6vw,48px);line-height:1}
   .titulo .lema{margin:12px 0 0;font:italic 500 clamp(14px,3.8vw,18px) "Inter",sans-serif;color:#dcdce4;opacity:0;animation:sube 1s 5.3s forwards}
   .titulo .estreno{display:inline-block;margin-top:14px;padding:7px 16px;border:1px solid rgba(244,201,93,.55);font-size:12px;color:var(--oro);opacity:0;animation:sube 1s 5.7s forwards;background:rgba(0,0,0,.35)}
-  .bajar{position:absolute;left:50%;bottom:calc(6.5vh + -2px);transform:translate(-50%,100%);z-index:4;width:22px;height:36px;border:2px solid rgba(255,255,255,.6);border-radius:14px;opacity:0;animation:aparece 1s 6.4s forwards}
+  .bajar{position:absolute;left:50%;bottom:14px;transform:translate(-50%,100%);z-index:4;width:22px;height:36px;border:2px solid rgba(255,255,255,.6);border-radius:14px;opacity:0;animation:aparece 1s 6.4s forwards}
   .bajar::after{content:"";position:absolute;left:50%;top:6px;width:4px;height:7px;margin-left:-2px;border-radius:2px;background:#fff;animation:rueda 1.6s infinite}
-  /* modo invitado: Hombre Araña (archivos privados, solo con enlace personal) */
-  .spidey{position:absolute;inset:0;overflow:hidden;background:#000}
-  .spidey .sfondo{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;filter:blur(28px) brightness(.5) saturate(1.2);display:none}
-  .spidey .sp{position:absolute;inset:0;margin:auto;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease}
-  .spidey .sp.on{opacity:1;animation:kenburns 7s ease-out forwards}
-  @media (min-aspect-ratio:3/4){ .spidey .sfondo{display:block} .spidey .sp{width:auto;aspect-ratio:9/16} }
-  .cine{position:relative;max-width:360px;margin:0 auto;aspect-ratio:9/16;border-radius:18px;overflow:hidden;background:#000;
+  /* modo invitado: video privado de los héroes (solo con enlace personal) */
+  .cine{position:relative;max-width:360px;margin:0 auto;aspect-ratio:9/16;border-radius:18px;overflow:hidden;background:var(--azul2);
     box-shadow:0 0 0 1px rgba(255,255,255,.15),0 30px 90px rgba(224,38,47,.35)}
   .cine video{width:100%;height:100%;object-fit:cover;display:block}
   .play{position:absolute;inset:0;margin:auto;width:86px;height:86px;border-radius:50%;border:none;cursor:pointer;font-size:34px;color:#fff;padding-left:6px;
@@ -92,11 +87,11 @@
   @keyframes latido{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 
   /* ---------- ESCENAS CON VIDEO DE FONDO ---------- */
-  .escena{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden;background:#000}
+  .escena{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden;background:var(--azul2)}
   .escena > video,.escena > .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.08);transition:transform 1.6s ease}
   .escena.viva > video{transform:scale(1)}
   .escena::before{content:"";position:absolute;inset:0;z-index:1;
-    background:linear-gradient(180deg,#000 0%,rgba(0,0,0,.35) 18%,rgba(0,0,0,.45) 60%,#000 100%),radial-gradient(90% 70% at 50% 50%,transparent 30%,rgba(0,0,0,.6) 100%)}
+    background:linear-gradient(180deg,var(--azul2) 0%,rgba(18,51,126,.18) 16%,rgba(18,51,126,.28) 62%,var(--azul2) 100%),radial-gradient(90% 70% at 50% 50%,transparent 40%,rgba(10,30,90,.35) 100%)}
   .escena .contenido{position:relative;z-index:2;width:100%;max-width:640px;margin:0 auto;padding:90px 18px}
   .rotulo{text-align:center;margin-bottom:26px}
   .rotulo .osw{font-size:11px;color:var(--oro)}
@@ -106,7 +101,7 @@
   .revela.d1{transition-delay:.15s} .revela.d2{transition-delay:.3s} .revela.d3{transition-delay:.45s}
 
   .vidrio{background:var(--vidrio);border:1px solid var(--borde);border-radius:18px;padding:22px 20px;
-    -webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+    -webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);box-shadow:0 20px 60px rgba(8,25,80,.45)}
   .vidrio.rojo{border-top:2px solid var(--rojo)}
 
   /* cuenta regresiva */
@@ -137,11 +132,11 @@
 
   /* formularios */
   label{display:block;font:500 10px "Oswald",sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--tenue);margin:16px 0 7px}
-  input,textarea{width:100%;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.45);color:#fff;font:400 16px "Inter",sans-serif}
+  input,textarea{width:100%;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.14);color:#fff;font:400 16px "Inter",sans-serif}
   input:focus,textarea:focus{outline:none;border-color:var(--oro)}
   textarea{min-height:88px;resize:vertical}
   .msg{min-height:22px;margin-top:12px;text-align:center;color:var(--oro);font-weight:600}
-  .felic{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);border-left:3px solid var(--rojo);border-radius:12px;padding:12px 16px;margin:12px 0}
+  .felic{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.12);border-left:3px solid var(--rojo);border-radius:12px;padding:12px 16px;margin:12px 0}
   .felic b{color:var(--oro)}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:16px}
   .grid img,.grid video{width:100%;height:112px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.15)}
@@ -151,7 +146,7 @@
   .centro{text-align:center}
 
   /* sección oscura sin video */
-  .oscura{position:relative;background:radial-gradient(80% 50% at 50% 0%,rgba(224,38,47,.18),transparent 70%),#05060c;padding:80px 18px}
+  .oscura{position:relative;background:radial-gradient(80% 50% at 50% 0%,rgba(255,210,63,.20),transparent 70%),linear-gradient(180deg,var(--azul2),#1d4bb0);padding:80px 18px}
   .oscura .contenido{max-width:640px;margin:0 auto}
 
   /* créditos finales */
@@ -161,7 +156,7 @@
   .bloque p{margin:0 0 14px;letter-spacing:.18em;font-size:12px}
   .bloque p b{display:block;font-family:"Anton",sans-serif;font-weight:400;font-size:clamp(26px,7vw,38px);letter-spacing:.06em;margin-top:4px}
   .bloque .fino{font-size:10px;letter-spacing:.14em;color:var(--tenue);line-height:1.8;border-top:1px solid rgba(255,255,255,.2);padding-top:14px;margin-top:22px}
-  footer{background:#000;text-align:center;padding:26px 16px 44px;color:#6f7385;font-size:12px}
+  footer{background:var(--azul2);text-align:center;padding:26px 16px 44px;color:#c7d3f2;font-size:13px}
 
   @keyframes grano{0%{transform:translate(0,0)}20%{transform:translate(-8%,5%)}40%{transform:translate(6%,-7%)}60%{transform:translate(-5%,9%)}80%{transform:translate(9%,3%)}100%{transform:translate(0,0)}}
   @keyframes brillo{0%{background-position:160% 0,0 0}55%,100%{background-position:-60% 0,0 0}}
@@ -197,10 +192,6 @@
   <div class="pantalla">
     <canvas class="fondoBlur" id="blur" width="72" height="128" aria-hidden="true"></canvas>
     <video id="trailer" muted playsinline autoplay preload="auto" poster="video/v0.jpg" src="video/v0.mp4"></video>
-    <div class="spidey" id="spidey" hidden>
-      <img class="sfondo" id="spFondo" alt="">
-      <img class="sp" alt=""><img class="sp" alt=""><img class="sp" alt="">
-    </div>
   </div>
   <div class="velo"></div>
   <div class="franja arriba"></div><div class="franja abajo"></div>
@@ -403,8 +394,9 @@ $('evCal').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
 (function(){
   const v=$('trailer'); let i=0;
   v.addEventListener('ended',()=>{
+    if(v.loop) return;   // modo invitado: video privado en bucle
     i=(i+1)%CONFIG.trailer.length; v.classList.add('corte');
-    setTimeout(()=>{ v.src=CONFIG.trailer[i]; v.play().catch(()=>{}); },320);
+    setTimeout(()=>{ if(v.loop) return; v.src=CONFIG.trailer[i]; v.play().catch(()=>{}); },320);
   });
   v.addEventListener('playing',()=>v.classList.remove('corte'));
   // fondo desenfocado en pantallas anchas (computador)
@@ -472,24 +464,26 @@ if(INV && SB_OK){
   $('rsvpSec').hidden=true;
 }
 
-/* ---- modo invitado: el Hombre Araña toma la portada + tráiler oficial con narrador ---- */
+/* ---- modo invitado: video de los héroes de fondo + tráiler oficial con narrador ---- */
 function modoHombreAranna(u){
-  const fotos=[u['sp90.jpg'],u['sp95.jpg'],u['sp96.jpg']].filter(Boolean); if(!fotos.length) return;
-  const caja=$('spidey'), imgs=caja.querySelectorAll('.sp');
-  imgs.forEach((im,i)=>{ if(fotos[i]) im.src=fotos[i]; });
-  const tv=$('trailer'); tv.pause(); tv.removeAttribute('src'); tv.load(); tv.style.visibility='hidden';
-  caja.hidden=false;
-  let i=0; const siguiente=()=>{ imgs.forEach((im,k)=>im.classList.toggle('on',k===i)); $('spFondo').src=fotos[i]; i=(i+1)%fotos.length; };
-  siguiente(); if(!REDUCE) setInterval(siguiente,5000);
-  if(u['trailer.mp4']){
+  const tv=$('trailer');
+  if(u['fondo.mp4']){
+    tv.pause(); if(u['portada.jpg']) tv.poster=u['portada.jpg'];
+    tv.loop=true; tv.src=u['fondo.mp4']; tv.play().catch(()=>{});
+  }
+  if(u['trailer2.mp4']){
     const v=$('trVideo'), b=$('trPlay');
-    v.src=u['trailer.mp4']; if(u['sp96.jpg']) v.poster=u['sp96.jpg'];
+    v.src=u['trailer2.mp4']; if(u['poster.jpg']) v.poster=u['poster.jpg'];
     $('trailerSec').hidden=false;
     b.addEventListener('click',()=>v.play().catch(()=>{}));
     v.addEventListener('play',()=>b.hidden=true); v.addEventListener('pause',()=>b.hidden=false); v.addEventListener('ended',()=>b.hidden=false);
   }
   const vc=document.querySelector('.creditos > video');
-  if(vc && u['sp96.jpg']){ vc.pause(); vc.removeAttribute('src'); vc.dataset.src=''; vc.load(); vc.poster=u['sp96.jpg']; }
+  if(vc && u['fondo.mp4']){
+    vc.pause(); vc.removeAttribute('src'); vc.load();
+    if(u['creditos.jpg']) vc.poster=u['creditos.jpg'];
+    vc.dataset.src=u['fondo.mp4'];
+  }
 }
 
 /* ---- felicitaciones y galería ---- */

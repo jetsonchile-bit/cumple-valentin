@@ -25,6 +25,8 @@
   .p-si{background:rgba(76,175,130,.18);color:var(--ok)} .p-no{background:rgba(201,85,107,.18);color:var(--no)} .p-pend{background:#2a2f52;color:var(--muted)}
   .pases{width:64px}  .msg{color:var(--muted);font-size:13px;margin-top:8px;min-height:18px}
   a.link{color:var(--gold)}
+  .tabla{overflow-x:auto;-webkit-overflow-scrolling:touch} .tabla table{min-width:560px}
+  @media (max-width:520px){ body{padding:14px} .card{padding:14px} }
   .titCard{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
   .titCard h2{margin:0;font-size:18px;color:var(--gold);font-weight:600}
   .felic{border-bottom:1px solid var(--line);padding:10px 2px}
@@ -65,10 +67,10 @@
     </div>
 
     <div class="card">
-      <table>
+      <div class="tabla"><table>
         <thead><tr><th>Nombre</th><th>Estado</th><th>Pases</th><th>Enlace</th><th>Comentario</th><th></th></tr></thead>
         <tbody id="tbody"></tbody>
-      </table>
+      </table></div>
       <div class="msg" id="listMsg"></div>
     </div>
 

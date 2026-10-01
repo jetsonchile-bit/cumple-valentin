@@ -118,6 +118,7 @@
   .fabMusica svg{width:24px;height:24px;fill:#241700}
   .fabMusica.apagado{filter:grayscale(1) brightness(.8);opacity:.75}
   .fabMusica.apagado::after{content:"";position:absolute;width:30px;height:3px;background:#241700;transform:rotate(-45deg);border-radius:2px}
+  .subtitulo{margin:12px auto 0;max-width:420px;font-size:16px;color:#e6ecff;line-height:1.5}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   .aviso{margin-top:16px;padding:14px 16px;border-radius:12px;background:linear-gradient(135deg,rgba(224,38,47,.28),rgba(224,38,47,.08));border:1px solid rgba(224,38,47,.6);text-align:center}
   .aviso .osw{display:block;font-size:11px;color:var(--oro);margin-bottom:4px}
@@ -277,12 +278,12 @@
 <!-- MENSAJES Y FOTOS -->
 <section class="oscura" id="felicSec" hidden>
   <div class="contenido">
-    <div class="rotulo revela"><div class="osw">Transmisión entrante</div><h2 class="anton plata">Envía tus felicitaciones a nuestro héroe</h2></div>
+    <div class="rotulo revela"><div class="osw">Mensajes para el cumpleañero</div><h2 class="anton plata">¡Felicita a nuestro héroe!</h2><p class="subtitulo">Déjale a Valentín un mensaje especial por sus 4 años.</p></div>
     <div class="heroeGrid revela d1" id="heroeGrid" hidden></div>
     <div class="vidrio revela d1">
       <label>Tu nombre</label><input id="fNombre" placeholder="Tu nombre" maxlength="80">
-      <label>Tu mensaje para Valentín</label><textarea id="fMensaje" placeholder="¡Feliz cumple, Súper Valentín! 🦸" maxlength="1000"></textarea>
-      <div class="botones"><button class="btn" id="btnFelic">Enviar felicitaciones</button></div>
+      <label>Tu mensaje</label><textarea id="fMensaje" placeholder="¡Feliz cumpleaños, Súper Valentín! 🦸" maxlength="1000"></textarea>
+      <div class="botones"><button class="btn" id="btnFelic">Enviar mi mensaje</button></div>
       <div class="msg" id="felicMsg"></div>
     </div>
     <div id="felicList"></div>

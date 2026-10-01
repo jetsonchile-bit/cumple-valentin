@@ -45,7 +45,10 @@
   #intro .l1,#intro .l2,#intro .l3{opacity:0;margin:0}
   #intro .l1{font-size:13px;color:var(--tenue);animation:aparece 1.1s .3s forwards,desaparece .6s 2.1s forwards}
   #intro .l2{font-size:clamp(20px,5.6vw,34px);animation:aparece 1.1s 2.4s forwards;padding:0 20px}
-  #intro .l3{font-size:12px;color:var(--tenue);margin-top:18px;animation:aparece 1s 3.2s forwards}
+  #intro .l3{margin-top:26px;animation:aparece .8s 2.6s forwards}
+  #intro .entrar{cursor:pointer;border:2px solid rgba(255,255,255,.75);border-radius:999px;padding:14px 28px;font-size:15px;color:#241700;
+    background:linear-gradient(180deg,#ffe08a,#c08f2c);box-shadow:0 0 0 0 rgba(255,214,90,.6),0 10px 30px rgba(5,15,50,.5);animation:aparece .8s 2.6s forwards,pulsoEntrar 1.6s ease-out 3.4s infinite}
+  @keyframes pulsoEntrar{0%{box-shadow:0 0 0 0 rgba(255,214,90,.65),0 10px 30px rgba(5,15,50,.5)}100%{box-shadow:0 0 0 22px rgba(255,214,90,0),0 10px 30px rgba(5,15,50,.5)}}
   #intro .destello{position:absolute;left:0;right:0;top:50%;height:2px;background:linear-gradient(90deg,transparent,#fff,transparent);opacity:0;animation:destello 1.4s 2.2s ease-out forwards}
 
   /* ---------- PORTADA / TRÁILER ---------- */
@@ -207,7 +210,7 @@
   <div>
     <p class="l1 osw">Una producción de la familia de Valentín</p>
     <p class="l2 anton plata" id="introSaludo">PRESENTA</p>
-    <p class="l3 osw">Toca para entrar</p>
+    <button class="l3 entrar osw" id="btnEntrar">🔊 Toca para entrar</button>
   </div>
 </div>
 
@@ -417,7 +420,8 @@ $('evCal').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
 
 /* ---- música de superhéroes (tema original): arranca al primer toque o al deslizar ---- */
 (function(){
-  const audio=new Audio('audio/heroes.m4a?v=2'); audio.loop=true; audio.volume=.45; audio.preload='auto';
+  try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}   // iPhone: suena aunque esté en silencio
+  const audio=new Audio('audio/heroes.m4a?v=2'); audio.loop=true; audio.volume=.45; audio.preload='auto'; audio.setAttribute('playsinline','');
   const fab=$('fabMusica'); let sonando=false, silenciado=false;
   const pintar=()=>{ fab.classList.toggle('apagado', !sonando); fab.hidden=false; };
   function intentar(){
@@ -431,6 +435,7 @@ $('evCal').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
     if(sonando){ audio.pause(); sonando=false; silenciado=true; }
     else { silenciado=false; audio.play().then(()=>{ sonando=true; pintar(); }).catch(()=>{}); }
     pintar(); });
+  intentar();   // si el navegador lo permite, suena apenas se abre la página
   document.addEventListener('visibilitychange',()=>{ if(document.hidden && sonando){ audio.pause(); } else if(!document.hidden && sonando){ audio.play().catch(()=>{}); } });
   pintar();
 })();
@@ -443,7 +448,7 @@ addEventListener('scroll',function q(){ if(scrollY>60){ const b=document.querySe
   const intro=$('intro'); let cerrado=false;
   const cerrar=()=>{ if(cerrado) return; cerrado=true; intro.classList.add('fuera'); setTimeout(()=>intro.remove(),1000); const v=$('trailer'); v.play().catch(()=>{}); };
   intro.addEventListener('click',cerrar);
-  setTimeout(cerrar, REDUCE ? 300 : 3900);
+  if(REDUCE) setTimeout(cerrar, 300);   // la apertura espera el toque: así la música arranca para todos
 })();
 
 /* ---- relleno desenfocado detrás de un video (para no recortarlo nunca) ---- */

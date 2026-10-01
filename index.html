@@ -246,8 +246,8 @@
         <p id="invSaludo" style="margin-top:0;font-size:19px">Cargando tu invitación…</p>
         <div id="invForm" hidden>
           <div class="botones">
-            <button class="btn" id="btnSi">Sí</button>
-            <button class="btn sec" id="btnNo">No</button>
+            <button class="btn" id="btnSi">¡Sí, listo para la misión! 🦸</button>
+            <button class="btn sec" id="btnNo">No puedo… ¡mi capa está en la lavandería! 🧺</button>
           </div>
         </div>
         <div class="msg" id="invMsg"></div>
@@ -496,7 +496,7 @@ if(INV && SB_OK){
     } else {
       ({ error } = await sb.rpc('cv_confirmar_invitado',{ p_token:INV, p_asiste:asiste, p_comentario:'' }));
     }
-    $('invMsg').textContent = error ? ("Error: "+error.message) : (asiste ? "¡Confirmado! Nos vemos el sábado 17 🎉" : "Registrado. ¡Te vamos a extrañar!");
+    $('invMsg').textContent = error ? ("Error: "+error.message) : (asiste ? "¡Misión aceptada! Nos vemos el sábado 17 🎉" : "¡Te vamos a extrañar, héroe! Gracias por avisar 💙");
   }
   $('btnSi').addEventListener('click',()=>confirmar(true));
   $('btnNo').addEventListener('click',()=>confirmar(false));
@@ -523,13 +523,13 @@ function modoHombreAranna(u){
     sec.style.backgroundSize='cover'; sec.style.backgroundPosition='center';
   });
   // secciones del medio: cuenta regresiva, datos y confirmación con los mismos personajes
-  [['datosSec','batcap.mp4'],['rsvpSec',u['flash.mp4']?'flash.mp4':'bat.mp4'],['mision','pan.mp4']].forEach(([id,k])=>{
+  [['datosSec','batcap.mp4'],['rsvpSec',u['superman.mp4']?'superman.mp4':'bat.mp4'],['mision','pan.mp4']].forEach(([id,k])=>{
     const v=document.querySelector('#'+id+' > video'); if(v && u[k]){ v.pause(); v.removeAttribute('src'); v.load(); v.removeAttribute('poster'); v.dataset.src=u[k]; } });
   const vc=document.querySelector('.creditos > video');
   if(vc && u['fondo.mp4']){
     vc.pause(); vc.removeAttribute('src'); vc.load();
     if(u['creditos.jpg']) vc.poster=u['creditos.jpg'];
-    vc.dataset.src=u['fondo.mp4'];
+    vc.dataset.src=u['flash.mp4']||u['fondo.mp4'];   // Flash solo aparece al final
   }
 }
 

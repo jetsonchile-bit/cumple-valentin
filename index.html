@@ -56,7 +56,7 @@
   .pantalla{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden}
   /* REGLA: los videos de fondo nunca se cortan (contain) y el espacio sobrante se rellena desenfocado */
   canvas.fondoBlur{position:absolute;inset:-3%;width:106%;height:106%;filter:blur(9px) brightness(.95) saturate(1.2)}
-  .pantalla video{position:relative;height:100%;width:100%;object-fit:contain;transition:opacity .35s ease}
+  .pantalla video{position:absolute;inset:0;height:100%;width:100%;object-fit:contain;transition:opacity .35s ease}
   .pantalla video.corte{opacity:0}
   .portada .velo{position:absolute;inset:0;pointer-events:none;
     background:radial-gradient(120% 80% at 50% 45%,transparent 55%,rgba(10,30,90,.45) 100%),
@@ -133,12 +133,10 @@
   .prev .mas{width:70px;height:70px;border-radius:8px;display:grid;place-items:center;background:rgba(255,255,255,.15);font-weight:700}
   .aviso.disfraz{background:linear-gradient(135deg,rgba(255,214,90,.30),rgba(255,214,90,.10));border-color:rgba(255,214,90,.75)}
   .aviso.disfraz p{margin:6px 0 0;font-size:15px;color:#f3f6ff}
-  @media (min-width:600px){
-    .portada,section,footer{max-width:480px;margin-left:auto;margin-right:auto;box-shadow:0 0 70px rgba(5,15,50,.55)}
-    .fabMusica{right:calc(50vw - 240px + 16px)}
-    .titulo h1{font-size:112px} .titulo .cumple b{font-size:40px}
-    .rotulo h2{font-size:60px} .creditos h2{font-size:64px} .cd .n{font-size:64px}
-  }
+  .oscura > .pelea{position:relative;height:82svh;min-height:420px;margin:-80px -18px 26px;overflow:hidden;background:var(--azul2)}
+  .pelea .relleno{position:absolute;inset:-4%;background-size:cover;background-position:center;filter:blur(10px) brightness(.9) saturate(1.2)}
+  .pelea img{position:relative;display:block;width:100%;height:100%;object-fit:contain}
+  .pelea::after{content:"";position:absolute;left:0;right:0;bottom:0;height:28%;background:linear-gradient(180deg,transparent,#12337e)}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   .aviso{margin-top:16px;padding:14px 16px;border-radius:12px;background:linear-gradient(135deg,rgba(224,38,47,.28),rgba(224,38,47,.08));border:1px solid rgba(224,38,47,.6);text-align:center}
   .aviso .osw{display:block;font-size:11px;color:var(--oro);margin-bottom:4px}
@@ -561,12 +559,16 @@ function modoHombreAranna(u){
   // galería de nuestro héroe: Valentín disfrazado (fotos privadas)
   const fotos=[['valentin1.jpg','Súper Valentín'],['valentin2.jpg','Valentín Batman'],['valentin3.jpg','Valentín Araña'],['valentin4.jpg','Valentín Araña']].filter(f=>u[f[0]]);
   if(fotos.length){ $('heroeGrid').innerHTML=fotos.map(f=>'<figure><img src="'+u[f[0]]+'" alt="'+f[1]+'" decoding="async"><figcaption>'+f[1]+'</figcaption></figure>').join(''); $('heroeGrid').hidden=false; }
-  // fondos azules: el Hombre Araña contra el Duende Verde y Venom
-  ['felicSec','galSec','regaloSec'].forEach((id,i)=>{
-    const img=u[['venom.jpg','duende.jpg','venom.jpg'][i]]; const sec=$(id); if(!img||!sec) return;
-    sec.style.backgroundImage='linear-gradient(180deg,rgba(18,51,126,.72) 0%,rgba(29,75,176,.30) 35%,rgba(29,75,176,.30) 65%,rgba(18,51,126,.8) 100%),url("'+img+'")';
-    sec.style.backgroundSize='cover'; sec.style.backgroundPosition='center';
+  // escenas de pelea: el Hombre Araña contra Venom (mensajes) y contra el villano verde (fotos)
+  [['felicSec','venom.jpg','El Hombre Araña peleando contra Venom'],['galSec','duende.jpg','El Hombre Araña contra el villano verde']].forEach(([id,k,alt])=>{
+    const sec=$(id); if(!sec || !u[k] || sec.querySelector('.pelea')) return;
+    const d=document.createElement('div'); d.className='pelea';
+    const r=document.createElement('div'); r.className='relleno'; r.style.backgroundImage='url("'+u[k]+'")';
+    const im=document.createElement('img'); im.src=u[k]; im.alt=alt; im.decoding='async';
+    d.append(r,im);
+    sec.insertBefore(d, sec.firstChild);
   });
+
   // secciones del medio: cuenta regresiva, datos y confirmación con los mismos personajes
   // videos de las secciones: imagen de espera inmediata y descarga anticipada, en el orden de la página
   const fila=[['#datosSec > video','batcap.mp4','poster_batcap.jpg'],

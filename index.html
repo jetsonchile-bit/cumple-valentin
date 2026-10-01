@@ -73,13 +73,6 @@
   .titulo .estreno{display:inline-block;margin-top:14px;padding:7px 16px;border:1px solid rgba(244,201,93,.55);font-size:12px;color:var(--oro);opacity:0;animation:sube 1s 5.7s forwards;background:rgba(0,0,0,.35)}
   .bajar{position:absolute;left:50%;bottom:14px;transform:translate(-50%,100%);z-index:4;width:22px;height:36px;border:2px solid rgba(255,255,255,.6);border-radius:14px;opacity:0;animation:aparece 1s 6.4s forwards}
   .bajar::after{content:"";position:absolute;left:50%;top:6px;width:4px;height:7px;margin-left:-2px;border-radius:2px;background:#fff;animation:rueda 1.6s infinite}
-  /* modo invitado: video privado de los héroes (solo con enlace personal) */
-  .cine{--w:min(100vw,calc((100svh - 90px) * .5625));position:relative;left:50%;width:var(--w);margin-left:calc(var(--w) / -2);aspect-ratio:9/16;border-radius:18px;overflow:hidden;background:var(--azul2);
-    box-shadow:0 0 0 1px rgba(255,255,255,.15),0 30px 90px rgba(224,38,47,.35)}
-  .cine video{width:100%;height:100%;object-fit:contain;display:block}
-  .play{position:absolute;inset:0;margin:auto;width:86px;height:86px;border-radius:50%;border:none;cursor:pointer;font-size:34px;color:#fff;padding-left:6px;
-    background:linear-gradient(180deg,#ff4a4a,#b3121b);box-shadow:0 0 0 12px rgba(224,38,47,.25),0 10px 40px rgba(0,0,0,.6);animation:latido 1.8s ease-in-out infinite}
-  @keyframes latido{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 
   /* ---------- ESCENAS CON VIDEO DE FONDO ---------- */
   .escena{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden;background:var(--azul2)}
@@ -139,6 +132,11 @@
   input:focus,textarea:focus{outline:none;border-color:var(--oro)}
   textarea{min-height:88px;resize:vertical}
   .msg{min-height:22px;margin-top:12px;text-align:center;color:var(--oro);font-weight:600}
+  .heroeGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 22px}
+  .heroeGrid figure{margin:0;border-radius:16px;overflow:hidden;border:2px solid rgba(244,201,93,.75);background:var(--azul2);
+    box-shadow:0 12px 30px rgba(8,25,80,.45),0 0 18px rgba(255,210,90,.25)}
+  .heroeGrid img{display:block;width:100%;aspect-ratio:3/4;object-fit:contain;background:var(--azul2)}
+  .heroeGrid figcaption{padding:7px 4px 8px;text-align:center;font:500 11px "Oswald",sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--oro)}
   .felic{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.12);border-left:3px solid var(--rojo);border-radius:12px;padding:12px 16px;margin:12px 0}
   .felic b{color:var(--oro)}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:16px}
@@ -277,26 +275,15 @@
   </div>
 </section>
 
-<!-- 4) TRÁILER OFICIAL (solo invitados con enlace) -->
-<section class="oscura" id="trailerSec" hidden>
-  <div class="contenido">
-    <div class="rotulo revela"><div class="osw">Solo para invitados</div><h2 class="anton metal">Tráiler oficial</h2></div>
-    <div class="cine revela d1">
-      <video id="trVideo" playsinline controls preload="metadata"></video>
-      <button class="play" id="trPlay" aria-label="Ver tráiler">▶</button>
-    </div>
-    <p class="centro revela d2" style="color:var(--tenue);margin-top:16px">Sube el volumen 🔊</p>
-  </div>
-</section>
-
 <!-- MENSAJES Y FOTOS -->
 <section class="oscura" id="felicSec" hidden>
   <div class="contenido">
-    <div class="rotulo revela"><div class="osw">Transmisión entrante</div><h2 class="anton plata">Mensajes para el héroe</h2></div>
+    <div class="rotulo revela"><div class="osw">Transmisión entrante</div><h2 class="anton plata">Envía tus felicitaciones a nuestro héroe</h2></div>
+    <div class="heroeGrid revela d1" id="heroeGrid" hidden></div>
     <div class="vidrio revela d1">
       <label>Tu nombre</label><input id="fNombre" placeholder="Tu nombre" maxlength="80">
-      <label>Mensaje</label><textarea id="fMensaje" placeholder="¡Feliz cumple, Valentín!" maxlength="1000"></textarea>
-      <div class="botones"><button class="btn" id="btnFelic">Enviar mensaje</button></div>
+      <label>Tu mensaje para Valentín</label><textarea id="fMensaje" placeholder="¡Feliz cumple, Súper Valentín! 🦸" maxlength="1000"></textarea>
+      <div class="botones"><button class="btn" id="btnFelic">Enviar felicitaciones</button></div>
       <div class="msg" id="felicMsg"></div>
     </div>
     <div id="felicList"></div>
@@ -504,16 +491,12 @@ function modoHombreAranna(u){
     tv.pause(); if(u['portada.jpg']) tv.poster=u['portada.jpg'];
     tv.loop=true; tv.src=u['fondo.mp4']; tv.play().catch(()=>{});
   }
-  if(u['trailer2.mp4']){
-    const v=$('trVideo'), b=$('trPlay');
-    v.src=u['trailer2.mp4']; if(u['poster.jpg']) v.poster=u['poster.jpg'];
-    $('trailerSec').hidden=false;
-    b.addEventListener('click',()=>v.play().catch(()=>{}));
-    v.addEventListener('play',()=>b.hidden=true); v.addEventListener('pause',()=>b.hidden=false); v.addEventListener('ended',()=>b.hidden=false);
-  }
+  // galería de nuestro héroe: Valentín disfrazado (fotos privadas)
+  const fotos=[['valentin1.jpg','Súper Valentín'],['valentin2.jpg','Valentín Batman'],['valentin3.jpg','Valentín Araña'],['valentin4.jpg','Valentín Araña']].filter(f=>u[f[0]]);
+  if(fotos.length){ $('heroeGrid').innerHTML=fotos.map(f=>'<figure><img src="'+u[f[0]]+'" alt="'+f[1]+'" loading="lazy"><figcaption>'+f[1]+'</figcaption></figure>').join(''); $('heroeGrid').hidden=false; }
   // fondos azules: el Hombre Araña contra el Duende Verde y Venom
-  ['trailerSec','felicSec','galSec','regaloSec'].forEach((id,i)=>{
-    const img=u[['duende.jpg','venom.jpg','duende.jpg','venom.jpg'][i]]; const sec=$(id); if(!img||!sec) return;
+  ['felicSec','galSec','regaloSec'].forEach((id,i)=>{
+    const img=u[['venom.jpg','duende.jpg','venom.jpg'][i]]; const sec=$(id); if(!img||!sec) return;
     sec.style.backgroundImage='linear-gradient(180deg,rgba(18,51,126,.72) 0%,rgba(29,75,176,.30) 35%,rgba(29,75,176,.30) 65%,rgba(18,51,126,.8) 100%),url("'+img+'")';
     sec.style.backgroundSize='cover'; sec.style.backgroundPosition='center';
   });

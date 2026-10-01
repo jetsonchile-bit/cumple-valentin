@@ -23,9 +23,9 @@
   .stat b{display:block;font-size:1.7rem;color:var(--gold)} .stat span{font-size:12px;color:var(--muted)}
   .pill{padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600}
   .p-si{background:rgba(76,175,130,.18);color:var(--ok)} .p-no{background:rgba(201,85,107,.18);color:var(--no)} .p-pend{background:#2a2f52;color:var(--muted)}
-  .pases{width:64px}  .msg{color:var(--muted);font-size:13px;margin-top:8px;min-height:18px}
+  .msg{color:var(--muted);font-size:13px;margin-top:8px;min-height:18px}
   a.link{color:var(--gold)}
-  .tabla{overflow-x:auto;-webkit-overflow-scrolling:touch} .tabla table{min-width:560px}
+  .tabla{overflow-x:auto;-webkit-overflow-scrolling:touch} .tabla table{min-width:440px}
   @media (max-width:520px){ body{padding:14px} .card{padding:14px} }
   .titCard{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
   .titCard h2{margin:0;font-size:18px;color:var(--gold);font-weight:600}
@@ -60,7 +60,6 @@
       <label>Nuevo invitado</label>
       <div class="row">
         <div><input id="nvNombre" placeholder="Nombre del invitado / familia"></div>
-        <div style="max-width:120px"><input id="nvPases" type="number" min="0" max="20" value="2" placeholder="Pases"></div>
         <button id="btnCrear">Crear + copiar enlace</button>
       </div>
       <div class="msg" id="crearMsg"></div>
@@ -68,7 +67,7 @@
 
     <div class="card">
       <div class="tabla"><table>
-        <thead><tr><th>Nombre</th><th>Estado</th><th>Pases</th><th>Enlace</th><th>Comentario</th><th></th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Estado</th><th>Enlace</th><th>Comentario</th><th></th></tr></thead>
         <tbody id="tbody"></tbody>
       </table></div>
       <div class="msg" id="listMsg"></div>
@@ -138,10 +137,9 @@ function pintar(rows){
   const conf = rows.filter(r => r.asistira === true);
   const noas = rows.filter(r => r.asistira === false);
   const pend = rows.filter(r => r.asistira === null);
-  const personas = conf.reduce((s,r)=> s + (1 + (r.acompanantes||0)), 0);
   $('stats').innerHTML = [
     ['Invitados', rows.length],['Confirmados', conf.length],['Pendientes', pend.length],
-    ['No asisten', noas.length],['Total personas', personas]
+    ['No asisten', noas.length]
   ].map(([k,v])=>`<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
 
   $('tbody').innerHTML = rows.map(r => {
@@ -149,7 +147,6 @@ function pintar(rows){
     return `<tr data-id="${r.id}">
       <td>${escapeHtml(r.nombre||'')}</td>
       <td>${estadoPill(r.asistira)}</td>
-      <td><input class="pases" type="number" min="0" max="20" value="${r.acompanantes||0}" data-id="${r.id}"></td>
       <td><button class="ghost btn-link" data-link="${encodeURIComponent(link)}">Copiar</button></td>
       <td>${escapeHtml(r.comentario||'')}</td>
       <td><button class="ghost btn-del" data-id="${r.id}">Borrar</button></td>
@@ -159,10 +156,10 @@ function pintar(rows){
 
 // crear invitado
 $('btnCrear').addEventListener('click', async () => {
-  const nombre = $('nvNombre').value.trim(); const pases = parseInt($('nvPases').value||'0',10);
+  const nombre = $('nvNombre').value.trim();
   if(!nombre){ $('crearMsg').textContent = "Escribe un nombre."; return; }
   $('crearMsg').textContent = "Creando…";
-  const { data, error } = await sb.rpc('cv_admin_crear_invitado', { pass: PASS, p_nombre: nombre, p_pases: pases });
+  const { data, error } = await sb.rpc('cv_admin_crear_invitado', { pass: PASS, p_nombre: nombre, p_pases: 0 });
   if(error){ $('crearMsg').textContent = "Error: " + error.message; return; }
   const link = CONFIG.siteUrl + '/?inv=' + data;
   try{ await navigator.clipboard.writeText(link); }catch(e){}
@@ -170,12 +167,7 @@ $('btnCrear').addEventListener('click', async () => {
   $('nvNombre').value = ''; recargar();
 });
 
-// delegación: cambiar pases, copiar enlace, borrar
-$('tbody').addEventListener('change', async e => {
-  if(!e.target.classList.contains('pases')) return;
-  const rid = e.target.dataset.id, pases = parseInt(e.target.value||'0',10);
-  await sb.rpc('cv_admin_set_pases', { pass: PASS, rid, pases }); recargar();
-});
+// delegación: copiar enlace, borrar
 $('tbody').addEventListener('click', async e => {
   if(e.target.classList.contains('btn-link')){
     const link = decodeURIComponent(e.target.dataset.link);

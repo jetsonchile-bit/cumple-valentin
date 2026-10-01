@@ -25,12 +25,20 @@
   .p-si{background:rgba(76,175,130,.18);color:var(--ok)} .p-no{background:rgba(201,85,107,.18);color:var(--no)} .p-pend{background:#2a2f52;color:var(--muted)}
   .pases{width:64px}  .msg{color:var(--muted);font-size:13px;margin-top:8px;min-height:18px}
   a.link{color:var(--gold)}
+  .titCard{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .titCard h2{margin:0;font-size:18px;color:var(--gold);font-weight:600}
+  .felic{border-bottom:1px solid var(--line);padding:10px 2px}
+  .felic b{color:var(--gold)} .felic small{color:var(--muted);margin-left:6px} .felic p{margin:5px 0 0;white-space:pre-wrap;line-height:1.45}
+  .fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+  .fotos a{display:block;aspect-ratio:1;border-radius:9px;overflow:hidden;background:#12142a}
+  .fotos img{width:100%;height:100%;object-fit:cover;display:block}
+  .vacio{color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Panel · Cumple de Valentín 🦸</h1>
-  <p class="sub">Crea invitados con su enlace personal, asigna pases y revisa confirmaciones.</p>
+  <p class="sub">Revisa confirmaciones, lee las felicitaciones y descarga las fotos de los invitados.</p>
 
   <!-- LOGIN -->
   <div class="card" id="loginCard">
@@ -65,6 +73,19 @@
     </div>
 
     <div class="card">
+      <div class="titCard"><h2>💌 Felicitaciones (<span id="nFelic">0</span>)</h2>
+        <button id="btnBajarFelic">⬇️ Descargar felicitaciones</button></div>
+      <div id="listaFelic"></div>
+    </div>
+
+    <div class="card">
+      <div class="titCard"><h2>📸 Fotos de los invitados (<span id="nFotos">0</span>)</h2>
+        <button id="btnBajarFotos">⬇️ Descargar todo (fotos + felicitaciones)</button></div>
+      <div class="msg" id="fotosMsg"></div>
+      <div class="fotos" id="gridFotos"></div>
+    </div>
+
+    <div class="card">
       <label>Cambiar contraseña del panel</label>
       <div class="row">
         <div><input type="password" id="nuevaPass" placeholder="Nueva contraseña (mínimo 6)" autocomplete="new-password"></div>
@@ -76,6 +97,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 const CONFIG = {
   supabaseUrl: "https://fqajmcvrijjthbgqhpgl.supabase.co",
@@ -93,6 +115,7 @@ async function entrar(){
   if(error){ $('loginMsg').textContent = "Contraseña incorrecta."; return; }
   $('loginCard').hidden = true; $('panel').hidden = false;
   pintar(data);
+  cargarRecuerdos();
 }
 $('btnLogin').addEventListener('click', entrar);
 $('pass').addEventListener('keydown', e => { if(e.key==='Enter') entrar(); });
@@ -169,6 +192,53 @@ $('btnPass').addEventListener('click', async () => {
   const { data, error } = await sb.rpc('cv_admin_change_password', { current_pass: PASS, new_pass: nueva });
   if(error || !data){ $('passMsg').textContent = "No se pudo cambiar."; return; }
   PASS = nueva; $('nuevaPass').value = ''; $('passMsg').textContent = "¡Contraseña cambiada!";
+});
+
+// felicitaciones y fotos
+let FELIC = [], FOTOS = [];
+const fecha = d => new Date(d).toLocaleString('es-CL',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+async function cargarRecuerdos(){
+  const f = await sb.from('cv_felicitaciones').select('nombre,mensaje,created_at').order('created_at',{ascending:true}).limit(2000);
+  FELIC = f.data || [];
+  $('nFelic').textContent = FELIC.length;
+  $('listaFelic').innerHTML = FELIC.length ? FELIC.slice().reverse().map(m =>
+    `<div class="felic"><b>${escapeHtml(m.nombre||'Anónimo')}</b><small>${fecha(m.created_at)}</small><p>${escapeHtml(m.mensaje||'')}</p></div>`).join('')
+    : '<p class="vacio">Todavía no hay felicitaciones.</p>';
+  const g = await sb.from('cv_galeria').select('url,created_at').eq('tipo','foto').order('created_at',{ascending:true}).limit(2000);
+  FOTOS = g.data || [];
+  $('nFotos').textContent = FOTOS.length;
+  $('gridFotos').innerHTML = FOTOS.length ? FOTOS.slice().reverse().map(x =>
+    `<a href="${x.url}" target="_blank"><img src="${x.url}" loading="lazy" alt="Foto"></a>`).join('')
+    : '<p class="vacio">Todavía no hay fotos.</p>';
+}
+function textoFelic(){
+  return 'FELICITACIONES PARA VALENTÍN · CUMPLE 4\n\n' + FELIC.map(m =>
+    `${m.nombre||'Anónimo'} (${fecha(m.created_at)})\n${m.mensaje||''}\n`).join('\n');
+}
+function bajar(blob, nombre){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+$('btnBajarFelic').addEventListener('click', () => {
+  if(!FELIC.length){ alert('Todavía no hay felicitaciones.'); return; }
+  bajar(new Blob(['\ufeff' + textoFelic()], {type:'text/plain;charset=utf-8'}), 'felicitaciones-valentin.txt');
+});
+$('btnBajarFotos').addEventListener('click', async () => {
+  if(!FOTOS.length && !FELIC.length){ alert('Todavía no hay fotos ni felicitaciones.'); return; }
+  const btn = $('btnBajarFotos'); btn.disabled = true;
+  const zip = new JSZip(); let ok = 0, fallas = 0;
+  if(FELIC.length) zip.file('felicitaciones-valentin.txt', '\ufeff' + textoFelic());
+  for(let i = 0; i < FOTOS.length; i++){
+    $('fotosMsg').textContent = `Preparando foto ${i+1} de ${FOTOS.length}…`;
+    try{
+      const r = await fetch(FOTOS[i].url); if(!r.ok) throw 0;
+      zip.file(`fotos/foto-${String(i+1).padStart(3,'0')}.jpg`, await r.blob()); ok++;
+    }catch(e){ fallas++; }
+  }
+  $('fotosMsg').textContent = 'Armando el archivo…';
+  bajar(await zip.generateAsync({type:'blob'}), 'recuerdos-cumple-valentin.zip');
+  $('fotosMsg').textContent = `¡Listo! Se descargaron ${ok} fotos` + (FELIC.length ? ' y las felicitaciones' : '') + (fallas ? ` (${fallas} no se pudieron bajar)` : '') + '.';
+  btn.disabled = false;
 });
 
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }

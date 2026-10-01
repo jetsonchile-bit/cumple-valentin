@@ -384,7 +384,7 @@ $('evCal').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
 
 /* ---- música de superhéroes (tema original): arranca al primer toque o al deslizar ---- */
 (function(){
-  const audio=new Audio('audio/heroes.m4a'); audio.loop=true; audio.volume=.45; audio.preload='auto';
+  const audio=new Audio('audio/heroes.m4a?v=2'); audio.loop=true; audio.volume=.45; audio.preload='auto';
   const fab=$('fabMusica'); let sonando=false, silenciado=false;
   const pintar=()=>{ fab.classList.toggle('apagado', !sonando); fab.hidden=false; };
   function intentar(){

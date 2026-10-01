@@ -60,7 +60,7 @@
                linear-gradient(180deg,rgba(18,51,126,.35) 0%,transparent 20%,transparent 52%,rgba(18,51,126,.72) 82%,var(--azul2) 100%)}
   .franja{display:none;position:absolute;left:0;right:0;height:6.5vh;background:#000;z-index:3;transform:scaleY(0);animation:franjas 1.4s cubic-bezier(.7,0,.2,1) .2s forwards}
   .franja.arriba{top:0;transform-origin:top} .franja.abajo{bottom:0;transform-origin:bottom}
-  .titulo{position:absolute;left:0;right:0;bottom:34px;z-index:4;text-align:center;padding:0 16px}
+  .titulo{position:absolute;left:0;right:0;bottom:112px;z-index:4;text-align:center;padding:0 16px}
   .titulo .pre{font-size:12px;color:#e6e6ea;margin:0 0 6px;opacity:0;animation:aparece 1.2s 4.4s forwards}
   .titulo h1{margin:0;font-size:clamp(78px,24vw,190px);line-height:.86;opacity:0;transform:scale(1.35);
     animation:golpe 1.3s cubic-bezier(.2,.9,.2,1) 3.8s forwards,brillo 3.2s ease-in-out 5.2s infinite}
@@ -71,8 +71,14 @@
   .titulo .cumple b{font-size:clamp(26px,7.6vw,48px);line-height:1}
   .titulo .lema{margin:12px 0 0;font:italic 500 clamp(14px,3.8vw,18px) "Inter",sans-serif;color:#dcdce4;opacity:0;animation:sube 1s 5.3s forwards}
   .titulo .estreno{display:inline-block;margin-top:14px;padding:7px 16px;border:1px solid rgba(244,201,93,.55);font-size:12px;color:var(--oro);opacity:0;animation:sube 1s 5.7s forwards;background:rgba(0,0,0,.35)}
-  .bajar{position:absolute;left:50%;bottom:14px;transform:translate(-50%,100%);z-index:4;width:22px;height:36px;border:2px solid rgba(255,255,255,.6);border-radius:14px;opacity:0;animation:aparece 1s 6.4s forwards}
-  .bajar::after{content:"";position:absolute;left:50%;top:6px;width:4px;height:7px;margin-left:-2px;border-radius:2px;background:#fff;animation:rueda 1.6s infinite}
+  /* flecha que invita a deslizar hacia abajo */
+  .bajar{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:5;display:flex;flex-direction:column;align-items:center;gap:2px;
+    text-decoration:none;opacity:0;animation:aparece .8s 5.6s forwards}
+  .bajar span{font:600 12px "Oswald",sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--oro);text-shadow:0 2px 8px rgba(0,0,0,.6);margin-bottom:4px}
+  .bajar i{display:block;width:22px;height:22px;border-right:4px solid var(--oro);border-bottom:4px solid var(--oro);transform:rotate(45deg);
+    filter:drop-shadow(0 0 6px rgba(255,210,90,.8));animation:flecha 1.4s ease-in-out infinite}
+  .bajar i+i{margin-top:-10px;animation-delay:.2s;opacity:.7}
+  @keyframes flecha{0%,100%{transform:translateY(-4px) rotate(45deg);opacity:.35}50%{transform:translateY(6px) rotate(45deg);opacity:1}}
 
   /* ---------- ESCENAS CON VIDEO DE FONDO ---------- */
   .escena{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden;background:var(--azul2)}
@@ -220,7 +226,7 @@
     <p class="lema">4 años salvando el mundo con su sonrisa.</p>
     <span class="estreno osw" id="evCuando">Estreno · Sábado 17 de octubre</span>
   </div>
-  <a class="bajar" href="#datosSec" aria-label="Bajar"></a>
+  <a class="bajar" href="#datosSec" aria-label="Desliza hacia abajo"><span>Desliza hacia abajo</span><i></i><i></i></a>
 </header>
 
 <!-- 1) LA MISIÓN: DATOS DE LA FIESTA -->
@@ -428,6 +434,9 @@ $('evCal').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
   document.addEventListener('visibilitychange',()=>{ if(document.hidden && sonando){ audio.pause(); } else if(!document.hidden && sonando){ audio.play().catch(()=>{}); } });
   pintar();
 })();
+
+/* ---- la flecha se va apenas el invitado empieza a bajar ---- */
+addEventListener('scroll',function q(){ if(scrollY>60){ const b=document.querySelector('.bajar'); if(b){ b.style.transition='opacity .4s'; b.style.opacity='0'; b.style.animation='none'; } removeEventListener('scroll',q); } },{passive:true});
 
 /* ---- apertura tipo estreno ---- */
 (function(){

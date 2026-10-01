@@ -411,6 +411,7 @@ $('evCal').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
 })();
 
 /* ---- relleno desenfocado detrás de un video (para no recortarlo nunca) ---- */
+function limpiarRelleno(v){ const c=v.previousElementSibling; if(c && c.tagName==='CANVAS'){ c.getContext('2d').clearRect(0,0,c.width,c.height); } }
 function rellenoDesenfocado(v, c){
   const x=c.getContext('2d');
   const pintarPoster=()=>{ if(!v.poster) return; const im=new Image(); im.onload=()=>{ try{ x.drawImage(im,0,0,c.width,c.height); }catch(e){} }; im.src=v.poster; };
@@ -524,10 +525,10 @@ function modoHombreAranna(u){
   });
   // secciones del medio: cuenta regresiva, datos y confirmación con los mismos personajes
   [['datosSec','batcap.mp4'],['rsvpSec',u['superman.mp4']?'superman.mp4':'bat.mp4'],['mision','pan.mp4']].forEach(([id,k])=>{
-    const v=document.querySelector('#'+id+' > video'); if(v && u[k]){ v.pause(); v.removeAttribute('src'); v.load(); v.removeAttribute('poster'); v.dataset.src=u[k]; } });
+    const v=document.querySelector('#'+id+' > video'); if(v && u[k]){ v.pause(); v.removeAttribute('src'); v.load(); v.removeAttribute('poster'); v.dataset.src=u[k]; limpiarRelleno(v); } });
   const vc=document.querySelector('.creditos > video');
   if(vc && u['fondo.mp4']){
-    vc.pause(); vc.removeAttribute('src'); vc.load();
+    vc.pause(); vc.removeAttribute('src'); vc.load(); limpiarRelleno(vc);
     if(u['creditos.jpg']) vc.poster=u['creditos.jpg'];
     vc.dataset.src=u['flash.mp4']||u['fondo.mp4'];   // Flash solo aparece al final
   }

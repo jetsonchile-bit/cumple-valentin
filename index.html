@@ -119,6 +119,9 @@
   .fabMusica.apagado{filter:grayscale(1) brightness(.8);opacity:.75}
   .fabMusica.apagado::after{content:"";position:absolute;width:30px;height:3px;background:#241700;transform:rotate(-45deg);border-radius:2px}
   .subtitulo{margin:12px auto 0;max-width:420px;font-size:16px;color:#e6ecff;line-height:1.5}
+  .barra{height:10px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;margin:14px auto 0;max-width:320px}
+  .barra span{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffe08a,#f4c95d);transition:width .3s ease}
+  .prev .mas{width:70px;height:70px;border-radius:8px;display:grid;place-items:center;background:rgba(255,255,255,.15);font-weight:700}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   .aviso{margin-top:16px;padding:14px 16px;border-radius:12px;background:linear-gradient(135deg,rgba(224,38,47,.28),rgba(224,38,47,.08));border:1px solid rgba(224,38,47,.6);text-align:center}
   .aviso .osw{display:block;font-size:11px;color:var(--oro);margin-bottom:4px}
@@ -294,11 +297,12 @@
   <div class="contenido">
     <div class="rotulo revela"><div class="osw">Detrás de cámaras</div><h2 class="anton plata">Fotos de la misión</h2></div>
     <div class="vidrio revela d1 centro">
-      <p style="margin-top:0">Sube tus fotos y videos del cumpleaños.</p>
-      <input type="file" id="galFile" accept="image/*,video/*" multiple hidden>
-      <button class="btn oro" id="btnElegir">📷 Elegir fotos / videos</button>
+      <p style="margin-top:0">Comparte tus fotos del cumpleaños. Puedes elegir muchas a la vez: las optimizamos automáticamente para que suban rápido. 📸</p>
+      <input type="file" id="galFile" accept="image/*" multiple hidden>
+      <button class="btn oro" id="btnElegir">📷 Elegir fotos</button>
       <div class="prev" id="galPrev"></div>
-      <div id="galSubirWrap" hidden class="botones"><button class="btn" id="btnSubir">Subir archivos</button></div>
+      <div id="galSubirWrap" hidden class="botones"><button class="btn" id="btnSubir">Subir fotos</button></div>
+      <div class="barra" id="galBarra" hidden><span id="galBarraIn"></span></div>
       <div class="msg" id="galMsg"></div>
     </div>
     <div class="grid" id="galGrid"></div>
@@ -335,6 +339,7 @@
 <footer>Hecho con mucho amor por la familia de Valentín 💙❤️</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 <script>
 /* ====== EDITA SOLO ESTE BLOQUE ====== */
 const CONFIG = {
@@ -552,32 +557,47 @@ if(SB_OK){
   });
   cargarFelic();
 
-  let seleccion=[];
-  $('btnElegir').addEventListener('click',()=>$('galFile').click());
+  let seleccion=[], subiendo=false;
+  $('btnElegir').addEventListener('click',()=>{ if(!subiendo) $('galFile').click(); });
   $('galFile').addEventListener('change',e=>{
-    seleccion=[...e.target.files];
-    $('galPrev').innerHTML=seleccion.map(f=>{ const u=URL.createObjectURL(f);
-      return f.type.startsWith('video')?`<video src="${u}" muted></video>`:`<img src="${u}" alt="">`; }).join('');
+    seleccion=[...e.target.files].filter(f=>f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name));
+    const vistas=seleccion.slice(0,11).map(f=>`<img src="${URL.createObjectURL(f)}" alt="">`).join('');
+    $('galPrev').innerHTML=vistas+(seleccion.length>11?`<div class="mas">+${seleccion.length-11}</div>`:'');
     $('galSubirWrap').hidden=seleccion.length===0;
+    $('btnSubir').textContent=seleccion.length===1?'Subir 1 foto':`Subir ${seleccion.length} fotos`;
+    $('galMsg').textContent=''; e.target.value='';
   });
+  // comprime en el celular (máx. 1920 px, ~0,6 MB) y sube de a 3 a la vez
+  async function comprimir(f){
+    if(!window.imageCompression) return f;
+    try{ return await imageCompression(f,{ maxSizeMB:0.6, maxWidthOrHeight:1920, initialQuality:0.82, fileType:'image/jpeg', useWebWorker:true }); }
+    catch(e){ return f.size<=8*1024*1024 ? f : null; }
+  }
+  async function subirUna(f){
+    const c=await comprimir(f); if(!c) throw new Error('muy grande');
+    const path=Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.jpg';
+    const { error:upErr } = await sb.storage.from('cv-galeria').upload(path,c,{upsert:false, contentType:'image/jpeg'});
+    if(upErr) throw upErr;
+    const { data:{ publicUrl } } = sb.storage.from('cv-galeria').getPublicUrl(path);
+    const { error } = await sb.from('cv_galeria').insert({ tipo:'foto', url:publicUrl, path }); if(error) throw error;
+  }
   $('btnSubir').addEventListener('click', async ()=>{
-    if(!seleccion.length) return;
-    $('galMsg').textContent="Subiendo…"; let fallos=[];
-    for(const f of seleccion){
-      if(f.size>50*1024*1024){ fallos.push(f.name+" (pesa más de 50 MB)"); continue; }
-      const ext=(f.name.split('.').pop()||'bin').toLowerCase();
-      const path=Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
-      const { error:upErr } = await sb.storage.from('cv-galeria').upload(path,f,{upsert:false});
-      if(upErr){ fallos.push(f.name); continue; }
-      const { data:{ publicUrl } } = sb.storage.from('cv-galeria').getPublicUrl(path);
-      await sb.from('cv_galeria').insert({ tipo:f.type.startsWith('video')?'video':'foto', url:publicUrl, path });
-    }
-    $('galMsg').textContent=fallos.length?("No se pudo subir: "+fallos.join(", ")):"¡Listo! Gracias por compartir 📸"; seleccion=[]; $('galPrev').innerHTML=''; $('galSubirWrap').hidden=true;
+    if(!seleccion.length || subiendo) return;
+    subiendo=true; $('btnSubir').disabled=true; $('galBarra').hidden=false;
+    const total=seleccion.length; let hechas=0, fallos=0, i=0;
+    const avance=()=>{ $('galMsg').textContent=`Subiendo ${Math.min(hechas+1,total)} de ${total}…`; $('galBarraIn').style.width=(hechas/total*100)+'%'; };
+    avance();
+    async function trabajador(){ while(i<total){ const f=seleccion[i++]; try{ await subirUna(f); }catch(e){ fallos++; } hechas++; avance(); } }
+    await Promise.all([trabajador(),trabajador(),trabajador()]);
+    $('galBarraIn').style.width='100%';
+    $('galMsg').textContent = fallos ? `Se subieron ${total-fallos} de ${total} fotos. Intenta de nuevo con las que faltaron.` : (total===1?'¡Listo! Tu foto ya está en la galería 📸':`¡Listo! Tus ${total} fotos ya están en la galería 📸`);
+    seleccion=[]; $('galPrev').innerHTML=''; $('galSubirWrap').hidden=true; $('btnSubir').disabled=false; subiendo=false;
+    setTimeout(()=>{ $('galBarra').hidden=true; $('galBarraIn').style.width='0'; },1500);
     cargarGaleria();
   });
   async function cargarGaleria(){
-    const { data } = await sb.from('cv_galeria').select('tipo,url').order('created_at',{ascending:false}).limit(60);
-    $('galGrid').innerHTML=(data||[]).map(g=>g.tipo==='video'?`<video src="${g.url}" controls></video>`:`<img src="${g.url}" loading="lazy" alt="">`).join('');
+    const { data } = await sb.from('cv_galeria').select('url').eq('tipo','foto').order('created_at',{ascending:false}).limit(300);
+    $('galGrid').innerHTML=(data||[]).map(g=>`<img src="${esc(g.url)}" loading="lazy" alt="">`).join('');
   }
   cargarGaleria();
 }

@@ -329,11 +329,11 @@
   <div class="contenido">
     <div class="rotulo revela"><div class="osw">Detrás de cámaras</div><h2 class="anton plata">Fotos de la misión</h2></div>
     <div class="vidrio revela d1 centro">
-      <p style="margin-top:0">Comparte tus fotos del cumpleaños. Puedes elegir muchas a la vez: las optimizamos automáticamente para que suban rápido. 📸</p>
-      <input type="file" id="galFile" accept="image/*" multiple hidden>
-      <button class="btn oro" id="btnElegir">📷 Elegir fotos</button>
+      <p style="margin-top:0">Comparte tus fotos y videos del cumpleaños. Puedes elegir varios a la vez: los optimizamos automáticamente para que suban rápido. Si es video, mejor cortos (hasta ~20 segundos). 📸🎥</p>
+      <input type="file" id="galFile" accept="image/*,video/*" multiple hidden>
+      <button class="btn oro" id="btnElegir">📷🎥 Elegir o grabar</button>
       <div class="prev" id="galPrev"></div>
-      <div id="galSubirWrap" hidden class="botones"><button class="btn" id="btnSubir">Subir fotos</button></div>
+      <div id="galSubirWrap" hidden class="botones"><button class="btn" id="btnSubir">Subir</button></div>
       <div class="barra" id="galBarra" hidden><span id="galBarraIn"></span></div>
       <div class="msg" id="galMsg"></div>
     </div>
@@ -456,10 +456,19 @@ $('evCal').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
 /* ---- la flecha se va apenas el invitado empieza a bajar ---- */
 addEventListener('scroll',function q(){ if(scrollY>60){ const b=document.querySelector('.bajar'); if(b){ b.style.transition='opacity .4s'; b.style.opacity='0'; b.style.animation='none'; } removeEventListener('scroll',q); } },{passive:true});
 
+/* ---- link directo a "Fotos de la misión" (para el QR del cumpleaños) ---- */
+function irAFotos(intentos){
+  intentos=intentos||0;
+  const sec=$('galSec');
+  if(sec && !sec.hidden){ sec.scrollIntoView({behavior:'smooth', block:'start'}); return; }
+  if(intentos<60) setTimeout(()=>irAFotos(intentos+1), 300);
+}
+
 /* ---- apertura tipo estreno ---- */
 (function(){
   const intro=$('intro'); let cerrado=false;
-  const cerrar=()=>{ if(cerrado) return; cerrado=true; intro.classList.add('fuera'); setTimeout(()=>intro.remove(),1000); const v=$('trailer'); v.play().catch(()=>{}); };
+  const cerrar=()=>{ if(cerrado) return; cerrado=true; intro.classList.add('fuera'); setTimeout(()=>intro.remove(),1000); const v=$('trailer'); v.play().catch(()=>{});
+    if(new URLSearchParams(location.search).get('ir')==='fotos') setTimeout(irAFotos, 1200); };
   intro.addEventListener('click',cerrar);
   if(REDUCE) setTimeout(cerrar, 300);   // la apertura espera el toque: así la música arranca para todos
 })();
@@ -625,26 +634,102 @@ if(SB_OK){
   let seleccion=[], subiendo=false;
   $('btnElegir').addEventListener('click',()=>{ if(!subiendo) $('galFile').click(); });
   $('galFile').addEventListener('change',e=>{
-    seleccion=[...e.target.files].filter(f=>f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name));
-    const vistas=seleccion.slice(0,11).map(f=>`<img src="${URL.createObjectURL(f)}" alt="">`).join('');
+    seleccion=[...e.target.files].filter(f=>f.type.startsWith('image/') || f.type.startsWith('video/') || /\.(jpe?g|png|webp|heic|heif|mp4|mov|webm|m4v)$/i.test(f.name));
+    const vistas=seleccion.slice(0,11).map(f=>{
+      const u=URL.createObjectURL(f);
+      return f.type.startsWith('video/') ? `<video src="${u}" muted playsinline></video>` : `<img src="${u}" alt="">`;
+    }).join('');
     $('galPrev').innerHTML=vistas+(seleccion.length>11?`<div class="mas">+${seleccion.length-11}</div>`:'');
     $('galSubirWrap').hidden=seleccion.length===0;
-    $('btnSubir').textContent=seleccion.length===1?'Subir 1 foto':`Subir ${seleccion.length} fotos`;
+    $('btnSubir').textContent=seleccion.length===1?'Subir 1 archivo':`Subir ${seleccion.length} archivos`;
     $('galMsg').textContent=''; e.target.value='';
   });
-  // comprime en el celular (máx. 1920 px, ~0,6 MB) y sube de a 3 a la vez
+  // fotos: comprime en el celular (máx. 1920 px, ~0,6 MB)
   async function comprimir(f){
     if(!window.imageCompression) return f;
     try{ return await imageCompression(f,{ maxSizeMB:0.6, maxWidthOrHeight:1920, initialQuality:0.82, fileType:'image/jpeg', useWebWorker:true }); }
     catch(e){ return f.size<=8*1024*1024 ? f : null; }
   }
+  // videos: re-graba en un canvas más chico (hasta ~854px, 25s, ~1,6 Mbps). Si el navegador no puede, sube el original si no pesa demasiado.
+  const VIDEO_MAX_ORIGINAL = 120*1024*1024;
+  async function comprimirVideo(f){
+    if(!window.MediaRecorder || !(HTMLCanvasElement.prototype.captureStream)){
+      return f.size<=VIDEO_MAX_ORIGINAL ? f : null;
+    }
+    let video, audioCtx;
+    try{
+      video=document.createElement('video');
+      video.muted=false; video.volume=0; video.playsInline=true; video.src=URL.createObjectURL(f);
+      await new Promise((res,rej)=>{
+        video.onloadedmetadata=res; video.onerror=()=>rej(new Error('meta'));
+        setTimeout(()=>rej(new Error('timeout')), 8000);
+      });
+      const DUR_MAX=25;
+      const dur=Math.min(video.duration||DUR_MAX, DUR_MAX);
+      const escala=Math.min(1, 854/Math.max(video.videoWidth||854, video.videoHeight||480));
+      const w=Math.max(2,Math.round(video.videoWidth*escala/2)*2), h=Math.max(2,Math.round(video.videoHeight*escala/2)*2);
+      const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+      const ctx=canvas.getContext('2d');
+      const stream=canvas.captureStream(24);
+      try{
+        audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+        const src=audioCtx.createMediaElementSource(video);
+        const dest=audioCtx.createMediaStreamDestination();
+        src.connect(dest);
+        dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+      }catch(e){}
+      const mime=['video/mp4;codecs=h264','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(m=>MediaRecorder.isTypeSupported(m));
+      if(!mime) throw new Error('sin formato de grabación');
+      const rec=new MediaRecorder(stream,{mimeType:mime, videoBitsPerSecond:1600000, audioBitsPerSecond:96000});
+      const trozos=[]; rec.ondataavailable=e=>{ if(e.data && e.data.size) trozos.push(e.data); };
+      const fin=new Promise(res=>{ rec.onstop=res; });
+      video.currentTime=0;
+      const reproduce = await video.play().then(()=>true).catch(()=>false);
+      if(!reproduce) throw new Error('no se pudo reproducir para comprimir');
+      rec.start(250);
+      const t0=performance.now();
+      await new Promise(res=>{
+        (function paso(){
+          try{ ctx.drawImage(video,0,0,w,h); }catch(e){}
+          if(video.ended || video.currentTime>=dur || (performance.now()-t0)>(dur*1000+3000)) return res();
+          requestAnimationFrame(paso);
+        })();
+      });
+      video.pause(); rec.stop(); await fin;
+      const salida=new Blob(trozos,{type:mime});
+      if(!salida.size) throw new Error('salida vacía');
+      return (salida.size<f.size || f.size>VIDEO_MAX_ORIGINAL) ? salida : f;
+    }catch(e){
+      return f.size<=VIDEO_MAX_ORIGINAL ? f : null;
+    }finally{
+      if(video && video.src) URL.revokeObjectURL(video.src);
+      if(audioCtx) try{ audioCtx.close(); }catch(e){}
+    }
+  }
+  function extVideo(mime){
+    mime=mime||'';
+    if(mime.includes('mp4')) return 'mp4';
+    if(mime.includes('webm')) return 'webm';
+    if(mime.includes('quicktime')) return 'mov';
+    return 'mp4';
+  }
   async function subirUna(f){
-    const c=await comprimir(f); if(!c) throw new Error('muy grande');
-    const path=Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.jpg';
-    const { error:upErr } = await sb.storage.from('cv-galeria').upload(path,c,{upsert:false, contentType:'image/jpeg'});
-    if(upErr) throw upErr;
-    const { data:{ publicUrl } } = sb.storage.from('cv-galeria').getPublicUrl(path);
-    const { error } = await sb.from('cv_galeria').insert({ tipo:'foto', url:publicUrl, path }); if(error) throw error;
+    if(f.type.startsWith('video/')){
+      const c=await comprimirVideo(f); if(!c) throw new Error('video muy pesado');
+      const ext=extVideo(c.type||f.type);
+      const path='v-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
+      const { error:upErr } = await sb.storage.from('cv-galeria').upload(path,c,{upsert:false, contentType:c.type||'video/mp4'});
+      if(upErr) throw upErr;
+      const { data:{ publicUrl } } = sb.storage.from('cv-galeria').getPublicUrl(path);
+      const { error } = await sb.from('cv_galeria').insert({ tipo:'video', url:publicUrl, path }); if(error) throw error;
+    } else {
+      const c=await comprimir(f); if(!c) throw new Error('muy grande');
+      const path=Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.jpg';
+      const { error:upErr } = await sb.storage.from('cv-galeria').upload(path,c,{upsert:false, contentType:'image/jpeg'});
+      if(upErr) throw upErr;
+      const { data:{ publicUrl } } = sb.storage.from('cv-galeria').getPublicUrl(path);
+      const { error } = await sb.from('cv_galeria').insert({ tipo:'foto', url:publicUrl, path }); if(error) throw error;
+    }
   }
   $('btnSubir').addEventListener('click', async ()=>{
     if(!seleccion.length || subiendo) return;
@@ -653,16 +738,18 @@ if(SB_OK){
     const avance=()=>{ $('galMsg').textContent=`Subiendo ${Math.min(hechas+1,total)} de ${total}…`; $('galBarraIn').style.width=(hechas/total*100)+'%'; };
     avance();
     async function trabajador(){ while(i<total){ const f=seleccion[i++]; try{ await subirUna(f); }catch(e){ fallos++; } hechas++; avance(); } }
-    await Promise.all([trabajador(),trabajador(),trabajador()]);
+    await Promise.all([trabajador(),trabajador()]); // los videos pesan más: 2 a la vez
     $('galBarraIn').style.width='100%';
-    $('galMsg').textContent = fallos ? `Se subieron ${total-fallos} de ${total} fotos. Intenta de nuevo con las que faltaron.` : (total===1?'¡Listo! Tu foto ya está en la galería 📸':`¡Listo! Tus ${total} fotos ya están en la galería 📸`);
+    $('galMsg').textContent = fallos ? `Se subieron ${total-fallos} de ${total}. Intenta de nuevo con lo que faltó.` : (total===1?'¡Listo! Ya está en la galería 📸':`¡Listo! Tus ${total} archivos ya están en la galería 📸`);
     seleccion=[]; $('galPrev').innerHTML=''; $('galSubirWrap').hidden=true; $('btnSubir').disabled=false; subiendo=false;
     setTimeout(()=>{ $('galBarra').hidden=true; $('galBarraIn').style.width='0'; },1500);
     cargarGaleria();
   });
   async function cargarGaleria(){
-    const { data } = await sb.from('cv_galeria').select('url').eq('tipo','foto').order('created_at',{ascending:false}).limit(300);
-    $('galGrid').innerHTML=(data||[]).map(g=>`<img src="${esc(g.url)}" loading="lazy" alt="">`).join('');
+    const { data } = await sb.from('cv_galeria').select('url,tipo').in('tipo',['foto','video']).order('created_at',{ascending:false}).limit(300);
+    $('galGrid').innerHTML=(data||[]).map(g=> g.tipo==='video'
+      ? `<video src="${esc(g.url)}" controls preload="metadata"></video>`
+      : `<img src="${esc(g.url)}" loading="lazy" alt="">`).join('');
   }
   cargarGaleria();
 }

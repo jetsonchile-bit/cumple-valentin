@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<script>/* QR antiguos (?ir=fotos): directo a la página de fotos y mensajes */
+(function(){var q=new URLSearchParams(location.search);if(q.get('ir')==='fotos'){var i=q.get('inv');location.replace('fotos.html'+(i?'?inv='+encodeURIComponent(i):''));}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Valentín · Cumple 4 — La película</title>
 <meta name="description" content="¡Estás invitado al estreno! Valentín cumple 4 años. Sábado 17 de octubre.">
@@ -456,19 +458,10 @@ $('evCal').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
 /* ---- la flecha se va apenas el invitado empieza a bajar ---- */
 addEventListener('scroll',function q(){ if(scrollY>60){ const b=document.querySelector('.bajar'); if(b){ b.style.transition='opacity .4s'; b.style.opacity='0'; b.style.animation='none'; } removeEventListener('scroll',q); } },{passive:true});
 
-/* ---- link directo a "Fotos de la misión" (para el QR del cumpleaños) ---- */
-function irAFotos(intentos){
-  intentos=intentos||0;
-  const sec=$('galSec');
-  if(sec && !sec.hidden){ sec.scrollIntoView({behavior:'smooth', block:'start'}); return; }
-  if(intentos<60) setTimeout(()=>irAFotos(intentos+1), 300);
-}
-
 /* ---- apertura tipo estreno ---- */
 (function(){
   const intro=$('intro'); let cerrado=false;
-  const cerrar=()=>{ if(cerrado) return; cerrado=true; intro.classList.add('fuera'); setTimeout(()=>intro.remove(),1000); const v=$('trailer'); v.play().catch(()=>{});
-    if(new URLSearchParams(location.search).get('ir')==='fotos') setTimeout(irAFotos, 1200); };
+  const cerrar=()=>{ if(cerrado) return; cerrado=true; intro.classList.add('fuera'); setTimeout(()=>intro.remove(),1000); const v=$('trailer'); v.play().catch(()=>{}); };
   intro.addEventListener('click',cerrar);
   if(REDUCE) setTimeout(cerrar, 300);   // la apertura espera el toque: así la música arranca para todos
 })();

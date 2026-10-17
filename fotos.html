@@ -111,7 +111,7 @@ $('btnFoto').onclick = () => { if(!subiendo) $('inFoto').click(); };
 $('btnVideo').onclick = () => { if(!subiendo) $('inVideo').click(); };
 $('btnGaleria').onclick = () => { if(!subiendo) $('inGaleria').click(); };
 ['inFoto','inVideo','inGaleria'].forEach(id => $(id).addEventListener('change', e => {
-  const archivos = [...e.target.files].filter(f => f.type.startsWith('image/') || f.type.startsWith('video/') || /\.(jpe?g|png|webp|heic|heif|mp4|mov|webm|m4v)$/i.test(f.name));
+  const archivos = [...e.target.files].filter(f => f.type.startsWith('image/') || f.type.startsWith('video/') || /\.(jpe?g|png|webp|heic|heif|mp4|mov|webm|m4v|3gp)$/i.test(f.name));
   e.target.value = '';
   if(archivos.length) subir(archivos);
 }));
@@ -121,25 +121,41 @@ async function comprimir(f){
   try{ return await imageCompression(f,{ maxSizeMB:0.6, maxWidthOrHeight:1920, initialQuality:0.82, fileType:'image/jpeg', useWebWorker:true }); }
   catch(e){ return f.size<=8*1024*1024 ? f : null; }
 }
+// algunos Android no informan el tipo del archivo: se reconoce el video por su extensión
+const esVideo = f => f.type.startsWith('video/') || (!f.type.startsWith('image/') && /\.(mp4|mov|webm|m4v|3gp)$/i.test(f.name));
+function tipoVideo(f){
+  if(f.type.startsWith('video/')) return f.type;
+  const ext = (f.name.match(/\.(\w+)$/) || [,''])[1].toLowerCase();
+  return ({ mov:'video/quicktime', webm:'video/webm', '3gp':'video/3gpp' })[ext] || 'video/mp4';
+}
 function extVideo(mime){
   mime = mime || '';
+  if(mime.includes('3gp')) return '3gp';
   if(mime.includes('mp4')) return 'mp4';
   if(mime.includes('webm')) return 'webm';
   if(mime.includes('quicktime')) return 'mov';
   return 'mp4';
 }
+function tipoImagen(f){
+  if(f.type.startsWith('image/')) return f.type;
+  const ext = (f.name.match(/\.(\w+)$/) || [,''])[1].toLowerCase();
+  return ({ png:'image/png', webp:'image/webp', heic:'image/heic', heif:'image/heif' })[ext] || 'image/jpeg';
+}
+const extImagen = mime => ({ 'image/png':'png', 'image/webp':'webp', 'image/heic':'heic', 'image/heif':'heif' })[mime] || 'jpg';
 async function subirUna(f){
-  const video = f.type.startsWith('video/');
+  const video = esVideo(f);
   let c, path, tipo, contentType;
+  const nombre = Date.now() + '-' + Math.random().toString(36).slice(2,8);
   if(video){
     if(f.size > VIDEO_MAX) throw new Error('video muy pesado');
-    c = f; tipo = 'video'; contentType = f.type || 'video/mp4';
-    path = 'v-' + Date.now() + '-' + Math.random().toString(36).slice(2,8) + '.' + extVideo(f.type);
+    c = f; tipo = 'video'; contentType = tipoVideo(f);
+    path = 'v-' + nombre + '.' + extVideo(contentType);
   } else {
     c = await comprimir(f); if(!c) throw new Error('muy grande');
-    tipo = 'foto'; contentType = 'image/jpeg';
-    path = Date.now() + '-' + Math.random().toString(36).slice(2,8) + '.jpg';
+    tipo = 'foto'; contentType = (c === f) ? tipoImagen(f) : 'image/jpeg';   // si no se pudo achicar, va con su tipo real
+    path = nombre + '.' + extImagen(contentType);
   }
+  c = new Blob([c], { type: contentType });   // el tipo viaja pegado al archivo (algunos Android no lo informan)
   const { error:upErr } = await sb.storage.from('cv-galeria').upload(path, c, { upsert:false, contentType });
   if(upErr) throw upErr;
   const { data:{ publicUrl } } = sb.storage.from('cv-galeria').getPublicUrl(path);
@@ -151,7 +167,7 @@ async function subir(archivos){
   ['btnFoto','btnVideo','btnGaleria'].forEach(id => $(id).disabled = true);
   $('prev').innerHTML = archivos.slice(0,10).map(f => {
     const u = URL.createObjectURL(f);
-    return f.type.startsWith('video/') ? `<video src="${u}" muted playsinline></video>` : `<img src="${u}" alt="">`;
+    return esVideo(f) ? `<video src="${u}" muted playsinline></video>` : `<img src="${u}" alt="">`;
   }).join('');
   $('fotoMsg').className = 'msg'; $('barra').hidden = false;
   const total = archivos.length; let hechas = 0, fallos = 0, largos = 0, i = 0;

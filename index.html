@@ -627,10 +627,10 @@ if(SB_OK){
   let seleccion=[], subiendo=false;
   $('btnElegir').addEventListener('click',()=>{ if(!subiendo) $('galFile').click(); });
   $('galFile').addEventListener('change',e=>{
-    seleccion=[...e.target.files].filter(f=>f.type.startsWith('image/') || f.type.startsWith('video/') || /\.(jpe?g|png|webp|heic|heif|mp4|mov|webm|m4v)$/i.test(f.name));
+    seleccion=[...e.target.files].filter(f=>f.type.startsWith('image/') || f.type.startsWith('video/') || /\.(jpe?g|png|webp|heic|heif|mp4|mov|webm|m4v|3gp)$/i.test(f.name));
     const vistas=seleccion.slice(0,11).map(f=>{
       const u=URL.createObjectURL(f);
-      return f.type.startsWith('video/') ? `<video src="${u}" muted playsinline></video>` : `<img src="${u}" alt="">`;
+      return esVideo(f) ? `<video src="${u}" muted playsinline></video>` : `<img src="${u}" alt="">`;
     }).join('');
     $('galPrev').innerHTML=vistas+(seleccion.length>11?`<div class="mas">+${seleccion.length-11}</div>`:'');
     $('galSubirWrap').hidden=seleccion.length===0;
@@ -645,31 +645,44 @@ if(SB_OK){
   }
   // videos: el celular ya los comprime al grabarlos; solo evitamos subir archivos demasiado pesados
   const VIDEO_MAX = 90*1024*1024;
+  // algunos Android no informan el tipo del archivo: se reconoce el video por su extensión
+  function esVideo(f){ return f.type.startsWith('video/') || (!f.type.startsWith('image/') && /\.(mp4|mov|webm|m4v|3gp)$/i.test(f.name)); }
+  function tipoVideo(f){
+    if(f.type.startsWith('video/')) return f.type;
+    const ext=(f.name.match(/\.(\w+)$/)||[,''])[1].toLowerCase();
+    return ({ mov:'video/quicktime', webm:'video/webm', '3gp':'video/3gpp' })[ext] || 'video/mp4';
+  }
   function extVideo(mime){
     mime=mime||'';
+    if(mime.includes('3gp')) return '3gp';
     if(mime.includes('mp4')) return 'mp4';
     if(mime.includes('webm')) return 'webm';
     if(mime.includes('quicktime')) return 'mov';
     return 'mp4';
   }
+  function tipoImagen(f){
+    if(f.type.startsWith('image/')) return f.type;
+    const ext=(f.name.match(/\.(\w+)$/)||[,''])[1].toLowerCase();
+    return ({ png:'image/png', webp:'image/webp', heic:'image/heic', heif:'image/heif' })[ext] || 'image/jpeg';
+  }
+  const extImagen = mime => ({ 'image/png':'png', 'image/webp':'webp', 'image/heic':'heic', 'image/heif':'heif' })[mime] || 'jpg';
   async function subirUna(f){
-    if(f.type.startsWith('video/')){
+    const nombre=Date.now()+'-'+Math.random().toString(36).slice(2,8);
+    let c, contentType, tipo, path;
+    if(esVideo(f)){
       if(f.size>VIDEO_MAX) throw new Error('video muy pesado');
-      const c=f;
-      const ext=extVideo(c.type||f.type);
-      const path='v-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
-      const { error:upErr } = await sb.storage.from('cv-galeria').upload(path,c,{upsert:false, contentType:c.type||'video/mp4'});
-      if(upErr) throw upErr;
-      const { data:{ publicUrl } } = sb.storage.from('cv-galeria').getPublicUrl(path);
-      const { error } = await sb.from('cv_galeria').insert({ tipo:'video', url:publicUrl, path }); if(error) throw error;
+      c=f; tipo='video'; contentType=tipoVideo(f);
+      path='v-'+nombre+'.'+extVideo(contentType);
     } else {
-      const c=await comprimir(f); if(!c) throw new Error('muy grande');
-      const path=Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.jpg';
-      const { error:upErr } = await sb.storage.from('cv-galeria').upload(path,c,{upsert:false, contentType:'image/jpeg'});
-      if(upErr) throw upErr;
-      const { data:{ publicUrl } } = sb.storage.from('cv-galeria').getPublicUrl(path);
-      const { error } = await sb.from('cv_galeria').insert({ tipo:'foto', url:publicUrl, path }); if(error) throw error;
+      c=await comprimir(f); if(!c) throw new Error('muy grande');
+      tipo='foto'; contentType=(c===f) ? tipoImagen(f) : 'image/jpeg';   // si no se pudo achicar, va con su tipo real
+      path=nombre+'.'+extImagen(contentType);
     }
+    c=new Blob([c],{type:contentType});   // el tipo viaja pegado al archivo (algunos Android no lo informan)
+    const { error:upErr } = await sb.storage.from('cv-galeria').upload(path,c,{upsert:false, contentType});
+    if(upErr) throw upErr;
+    const { data:{ publicUrl } } = sb.storage.from('cv-galeria').getPublicUrl(path);
+    const { error } = await sb.from('cv_galeria').insert({ tipo, url:publicUrl, path }); if(error) throw error;
   }
   $('btnSubir').addEventListener('click', async ()=>{
     if(!seleccion.length || subiendo) return;

@@ -266,11 +266,11 @@ $('btnBajarFotos').addEventListener('click', async () => {
     try{
       const r = await fetch(item.url); if(!r.ok) throw 0;
       const blob = await r.blob();
+      const ext = (item.url.match(/\.(\w+)(\?|$)/) || [,item.tipo === 'video' ? 'mp4' : 'jpg'])[1].toLowerCase();
       if(item.tipo === 'video'){
-        const ext = (item.url.match(/\.(\w+)(\?|$)/) || [,'mp4'])[1].toLowerCase();
         zip.file(`videos/video-${String(i+1).padStart(3,'0')}.${ext}`, blob);
       } else {
-        zip.file(`fotos/foto-${String(i+1).padStart(3,'0')}.jpg`, blob);
+        zip.file(`fotos/foto-${String(i+1).padStart(3,'0')}.${ext}`, blob);
       }
       ok++;
     }catch(e){ fallas++; }

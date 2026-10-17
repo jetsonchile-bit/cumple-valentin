@@ -38,6 +38,7 @@
   .fotoItem.oculta{opacity:.4}
   .fotoItem .btn-toggle{position:absolute;right:5px;bottom:5px;padding:4px 9px;font-size:11px;border-radius:7px;background:rgba(10,12,28,.85);color:#fff;border:1px solid rgba(255,255,255,.3)}
   .fotoItem .btn-toggle.mostrar{background:var(--gold);color:#241c05;border-color:transparent}
+  .fotoItem .btn-borrar{position:absolute;left:5px;bottom:5px;padding:4px 9px;font-size:11px;border-radius:7px;background:rgba(201,85,107,.92);color:#fff;border:none}
   .vacio{color:var(--muted);font-size:14px}
 </style>
 </head>
@@ -212,10 +213,24 @@ async function cargarRecuerdos(){
       : `<img src="${url}" loading="lazy" alt="Foto">`;
     return `<div class="fotoItem${x.oculto?' oculta':''}">
       <a href="${url}" target="_blank" rel="noopener">${media}</a>
+      <button class="btn-borrar" data-id="${id}" data-tipo="${x.tipo==='video'?'video':'foto'}">Borrar</button>
       <button class="btn-toggle${x.oculto?' mostrar':''}" data-id="${id}" data-oculto="${x.oculto?'1':'0'}">${x.oculto?'Colocar':'Retirar'}</button>
     </div>`;
   }).join('') : '<p class="vacio">Todavía no hay fotos ni videos.</p>';
 }
+// borrar para siempre una foto o video (registro + archivo)
+$('gridFotos').addEventListener('click', async e => {
+  const b = e.target.closest('.btn-borrar'); if(!b) return;
+  const cual = b.dataset.tipo === 'video' ? 'este video' : 'esta foto';
+  if(!confirm(`¿Borrar ${cual} para siempre? No se puede deshacer.`)) return;
+  b.disabled = true; b.textContent = 'Borrando…';
+  const { data: path, error } = await sb.rpc('cv_admin_del_galeria', { pass: PASS, gid: b.dataset.id });
+  if(error){ alert('No se pudo borrar: ' + error.message); b.disabled = false; b.textContent = 'Borrar'; return; }
+  const { error: e2 } = await sb.storage.from('cv-galeria').remove([path]);
+  if(e2) alert('Se quitó de la galería, pero el archivo no se pudo borrar del almacenamiento: ' + e2.message);
+  await cargarRecuerdos();
+});
+
 // retirar/colocar una foto o video de la galería pública (no la borra, solo la oculta)
 $('gridFotos').addEventListener('click', async e => {
   const b = e.target.closest('.btn-toggle'); if(!b) return;

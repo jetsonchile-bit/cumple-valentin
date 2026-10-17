@@ -331,7 +331,7 @@
   <div class="contenido">
     <div class="rotulo revela"><div class="osw">Detrás de cámaras</div><h2 class="anton plata">Fotos de la misión</h2></div>
     <div class="vidrio revela d1 centro">
-      <p style="margin-top:0">Comparte tus fotos y videos del cumpleaños. Puedes elegir varios a la vez: las fotos las optimizamos automáticamente para que suban rápido. Si es video, mejor cortos (hasta ~20 segundos). 📸🎥</p>
+      <p style="margin-top:0">Comparte tus fotos y videos del cumpleaños. Puedes elegir varios a la vez: las fotos las optimizamos automáticamente para que suban rápido. 🎥 Deja un video de recuerdo de 20 segundos. 📸</p>
       <input type="file" id="galFile" accept="image/*,video/*" multiple hidden>
       <button class="btn oro" id="btnElegir">📷🎥 Elegir o grabar</button>
       <div class="prev" id="galPrev"></div>
@@ -677,10 +677,13 @@ if(SB_OK){
     const total=seleccion.length; let hechas=0, fallos=0, i=0;
     const avance=()=>{ $('galMsg').textContent=`Subiendo ${Math.min(hechas+1,total)} de ${total}…`; $('galBarraIn').style.width=(hechas/total*100)+'%'; };
     avance();
-    async function trabajador(){ while(i<total){ const f=seleccion[i++]; try{ await subirUna(f); }catch(e){ fallos++; } hechas++; avance(); } }
+    let largos=0;
+    async function trabajador(){ while(i<total){ const f=seleccion[i++]; try{ await subirUna(f); }catch(e){ fallos++; if(e && e.message==='video muy pesado') largos++; } hechas++; avance(); } }
     await Promise.all([trabajador(),trabajador()]); // los videos pesan más: 2 a la vez
     $('galBarraIn').style.width='100%';
-    $('galMsg').textContent = fallos ? `Se subieron ${total-fallos} de ${total}. Intenta de nuevo con lo que faltó.` : (total===1?'¡Listo! Ya está en la galería 📸':`¡Listo! Tus ${total} archivos ya están en la galería 📸`);
+    $('galMsg').textContent = fallos
+      ? (largos===fallos ? (total>fallos?`Se subieron ${total-fallos} de ${total}. `:'')+'Ese video es muy largo: deja un video de recuerdo de 20 segundos 🎥' : `Se subieron ${total-fallos} de ${total}. Intenta de nuevo con lo que faltó.`)
+      : (total===1?'¡Listo! Ya está en la galería 📸':`¡Listo! Tus ${total} archivos ya están en la galería 📸`);
     seleccion=[]; $('galPrev').innerHTML=''; $('galSubirWrap').hidden=true; $('btnSubir').disabled=false; subiendo=false;
     setTimeout(()=>{ $('galBarra').hidden=true; $('galBarraIn').style.width='0'; },1500);
     cargarGaleria();

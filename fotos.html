@@ -74,7 +74,7 @@
     <div class="prev" id="prev"></div>
     <div class="barra" id="barra" hidden><span id="barraIn"></span></div>
     <div class="msg" id="fotoMsg"></div>
-    <p class="nota">Se suben solas apenas las tomas. Videos cortos, mejor de hasta 20 segundos.</p>
+    <p class="nota"><b style="color:var(--oro);font-size:16px">🎥 Deja un video de recuerdo de 20 segundos</b><br>Las fotos y videos se suben solos apenas los tomas.</p>
   </section>
 
   <section class="caja">
@@ -154,15 +154,18 @@ async function subir(archivos){
     return f.type.startsWith('video/') ? `<video src="${u}" muted playsinline></video>` : `<img src="${u}" alt="">`;
   }).join('');
   $('fotoMsg').className = 'msg'; $('barra').hidden = false;
-  const total = archivos.length; let hechas = 0, fallos = 0, i = 0;
+  const total = archivos.length; let hechas = 0, fallos = 0, largos = 0, i = 0;
   const avance = () => { $('fotoMsg').textContent = `Subiendo ${Math.min(hechas+1,total)} de ${total}…`; $('barraIn').style.width = (hechas/total*100) + '%'; };
   avance();
-  async function trabajador(){ while(i < total){ const f = archivos[i++]; try{ await subirUna(f); }catch(e){ fallos++; } hechas++; avance(); } }
+  async function trabajador(){ while(i < total){ const f = archivos[i++]; try{ await subirUna(f); }catch(e){ fallos++; if(e && e.message === 'video muy pesado') largos++; } hechas++; avance(); } }
   await Promise.all([trabajador(), trabajador()]);
   $('barraIn').style.width = '100%';
   if(fallos){
     $('fotoMsg').className = 'msg err';
-    $('fotoMsg').textContent = `Se subieron ${total-fallos} de ${total}. Intenta de nuevo con lo que faltó.`;
+    const parte = total > fallos ? `Se subieron ${total-fallos} de ${total}. ` : '';
+    $('fotoMsg').textContent = largos === fallos
+      ? parte + 'Ese video es muy largo: deja un video de recuerdo de 20 segundos 🎥'
+      : `Se subieron ${total-fallos} de ${total}. Intenta de nuevo con lo que faltó.`;
   } else {
     $('fotoMsg').className = 'msg ok';
     $('fotoMsg').textContent = total === 1 ? '¡Listo! Ya está en la galería de la fiesta 🎉' : `¡Listo! Tus ${total} archivos ya están en la galería 🎉`;

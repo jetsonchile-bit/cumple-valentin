@@ -3,3 +3,8 @@ vista-previa.png
 .claude/
 escenas-pelicula.jpg
 fotos-valentin/
+# capturas y archivos locales (pueden tener personajes o fotos privadas): nunca publicar
+/*.jpg
+/*.jpeg
+/*.png
+/*.mp4

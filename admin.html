@@ -206,12 +206,13 @@ async function cargarRecuerdos(){
   FOTOS = g.data || [];
   $('nFotos').textContent = FOTOS.length;
   $('gridFotos').innerHTML = FOTOS.length ? FOTOS.slice().reverse().map(x => {
+    const url = escapeHtml(x.url), id = escapeHtml(x.id);
     const media = x.tipo==='video'
-      ? `<video src="${x.url}" muted playsinline preload="metadata"></video>`
-      : `<img src="${x.url}" loading="lazy" alt="Foto">`;
+      ? `<video src="${url}" muted playsinline preload="metadata"></video>`
+      : `<img src="${url}" loading="lazy" alt="Foto">`;
     return `<div class="fotoItem${x.oculto?' oculta':''}">
-      <a href="${x.url}" target="_blank">${media}</a>
-      <button class="btn-toggle${x.oculto?' mostrar':''}" data-id="${x.id}" data-oculto="${x.oculto?'1':'0'}">${x.oculto?'Colocar':'Retirar'}</button>
+      <a href="${url}" target="_blank" rel="noopener">${media}</a>
+      <button class="btn-toggle${x.oculto?' mostrar':''}" data-id="${id}" data-oculto="${x.oculto?'1':'0'}">${x.oculto?'Colocar':'Retirar'}</button>
     </div>`;
   }).join('') : '<p class="vacio">Todavía no hay fotos ni videos.</p>';
 }
